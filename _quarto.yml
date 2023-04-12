@@ -1,0 +1,26 @@
+project:
+  type: website
+
+website:
+  title: "Sandro Luis R. Silva"
+  navbar:
+    left:
+      - text: Home
+        href: index.qmd
+      - text: Projects
+        href: projects.qmd  
+      - text: Resume
+        href: resume.qmd
+
+    right:
+      - icon: github
+        href: https://github.com/
+      - icon: twitter
+        href: https://twitter.com
+format:
+  html:
+    theme: journal
+    css: styles.css
+
+
+

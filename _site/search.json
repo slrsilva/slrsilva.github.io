@@ -1,0 +1,51 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "About",
+    "section": "",
+    "text": "Sandro has worked in the financial services and energy industries ever since 2013. He has honed his skills in data mining and wrangling, revenue modelling, portfolio management, financial risk analysis, risk and compliance assessments, market study and research, and budgetting and planning.\n\n\nWhen not working on his data analytics projects, Sandro enjoys spending time reading fiction and non-fiction books, cooking indian food, going to the gym and spending time with his family.\n\n\nEducation\n M.Sc., Data Science \n\nAsian Insitute of Management – Manila, Philippines\n\n\n2019 - 2020\n\n B.A., Double Major in Economics and Mathematics \n\nCollege of the Holy Cross – Massachusetts, USA\n\n\n2009 - 2013\n\n\n\nExperience\n Analytis and Optimization Manager \n\nAboitiz Power Corporation\n\n Data Analytics and Digital Solutions Manager \n\nTeaM Energy Corporation\n\n Financial Risk Consultant \n\nAIA Philippines\n\n Innovations Programs Manager \n\nAboitiz Power Corporation\n\n Private Consulting Data Scientist \n\nEpimetrics, Inc. with National Resilience Council and Coastal Cities at Risk\n\n Private Consulting Data Scientist \n\nEpimetrics, Inc. with Philippine Council for Health Research and Development\n\n Private Consultant for Mathematical Modelling \n\nAboitiz Power Corporation\n\n Margin Optimization Specialist \n\nAboitiz Power Corporation\n\n Market Analyst\n\nAboitiz Power Corporation"
+  },
+  {
+    "objectID": "posts/post-with-code/index.html",
+    "href": "posts/post-with-code/index.html",
+    "title": "Post With Code",
+    "section": "",
+    "text": "This is a post with executable code."
+  },
+  {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "Welcome To My Blog",
+    "section": "",
+    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this blog"
+  },
+  {
+    "objectID": "index.html#education",
+    "href": "index.html#education",
+    "title": "About",
+    "section": "",
+    "text": "M.Sc., Data Science  Asian Insitute of Management – Manila, Philippines  2019 - 2020\n B.A., Double Major in Economics and Mathematics  College of the Holy Cross – Massachusetts, USA  2009 - 2013"
+  },
+  {
+    "objectID": "index.html#experience",
+    "href": "index.html#experience",
+    "title": "About",
+    "section": "",
+    "text": "Wengo Analytics | Head Data Scientist | April 2018 - present\nGeoScynce | Chief Analyst | Sept 2012 - April 2018"
+  },
+  {
+    "objectID": "resume.html#sr.-data-journalist-nevermore-2022---present",
+    "href": "resume.html#sr.-data-journalist-nevermore-2022---present",
+    "title": "Sandro Luis R. Silva",
+    "section": "Sr. Data Journalist, Nevermore (2022 - present)",
+    "text": "Sr. Data Journalist, Nevermore (2022 - present)\n\nIndependently analyzed student journeys among peers to create a classification model for identifying sketchy monster\nOptimized data gathering and research based on new and evolving constraints by the school principal and sheriff\nSuspected every stakeholder I came in contact with following “Trust but verify” data philosophy\nDeveloped AI based psychic visions in my head to create a propensity model for incident occurrence with 100% accuracy\nSuccessfully led a team of trusting peers multiple times to face dangers risen from bad data collection\nExpertly coded in multiple languages like Latin and German\nDeveloped algorithms using Natural Language Processing and\nDeep Learning models to communicate with dead and alive stakeholders"
+  }
+]
