@@ -1,7 +1,7 @@
 <iframe
     width='1000'
     height='1000'
-    src="docs/sandro-silva-resume.pdf">
+    src="documents/sandro-silva-resume.pdf">
 </iframe>
 <!-- ---
 title: "Sandro Luis R. Silva"
