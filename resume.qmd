@@ -1,37 +1,5 @@
 <iframe
     width='1000'
     height='1000'
-    src="documents/sandro-silva-resume.pdf">
+    src="documents/sandro-silva-resume_20220413.pdf">
 </iframe>
-<!-- ---
-title: "Sandro Luis R. Silva"
-subtitle: "Data Science resume built with R Quarto markdown"
-format: pdf
---- -->
-
-<!-- <hr>
-
-# Experience
-
-## Sr. Data Journalist, Nevermore (2022 - present)
-
--   Independently analyzed student journeys among peers to create a classification model for identifying sketchy monster
--   Optimized data gathering and research based on new and evolving constraints by the school principal and sheriff
--   Suspected every stakeholder I came in contact with following "Trust but verify" data philosophy
--   Developed AI based psychic visions in my head to create a propensity model for incident occurrence with 100% accuracy 
--   Successfully led a team of trusting peers multiple times to face dangers risen from bad data collection
--   Expertly coded in multiple languages like Latin and German
--   Developed algorithms using Natural Language Processing and\
-    Deep Learning models to communicate with dead and alive stakeholders
-
-
-# Hobbies
-
--   Dancing like nobody is watching
--   Being cold and distant in an adorable way
--   Not hugging
-
-<br>
-
-# About this resume
--   Created by [Deepsha Menghani](https://deepshamenghani.quarto.pub/dmenghani/) -->
