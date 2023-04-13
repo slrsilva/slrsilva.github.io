@@ -22,7 +22,10 @@ editor:
 
 <p class='aboutme'>Sandro has worked in the financial services and energy industries ever since 2013. He has honed his skills in data mining and wrangling, revenue modelling, portfolio management, financial risk analysis, risk and compliance assessments, market study and research, and budgetting and planning.</p>
 
-<p class='aboutme'>When not working on his data analytics projects, Sandro enjoys spending time reading fiction and non-fiction books, cooking indian food, going to the gym and spending time with his family.</p>
+<p class='aboutme'>When not working on his data analytics projects, Sandro enjoys spending time reading fiction and non-fiction book, going to the gym and doing functional training, and spending time with his family.</p>
+
+<p class='aboutme'>
+This webite will act as a my documentation in mastering the art and science of data analytics and data science. Stay tuned as I will be placing my past projects, and will also post on topics that interests me. </p>
 
 # Education
 
