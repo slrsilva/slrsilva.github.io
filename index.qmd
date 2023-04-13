@@ -25,7 +25,7 @@ editor:
 <p class='aboutme'>When not working on his data analytics projects, Sandro enjoys spending time reading fiction and non-fiction book, going to the gym and doing functional training, and spending time with his family.</p>
 
 <p class='aboutme'>
-This webite will act as a my documentation in mastering the art and science of data analytics and data science. Stay tuned as I will be placing my past projects, and will also post on topics that interests me. </p>
+This webite will act my journal in mastering the art and science of data science and analytics. Stay tuned as I will be placing my past projects, and will also post on topics that interests me. </p>
 
 # Education
 
