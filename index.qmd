@@ -1,6 +1,6 @@
 ---
 title: "About"
-image: profile.jpg
+image: "images/profile.png"
 about:
   template: trestles
   links:
@@ -16,16 +16,17 @@ about:
 
 editor: 
   render-on-save: true
+
+website:
+  favicon: "images/profile.png"
 ---
 
 :::{#hero-heading}
 
-<p class='aboutme'>Sandro has worked in the financial services and energy industries ever since 2013. He has honed his skills in data mining and wrangling, revenue modelling, portfolio management, financial risk analysis, risk and compliance assessments, market study and research, and budgetting and planning.</p>
+<p class='aboutme'>Sandro has worked in the financial services and energy industries ever since 2013. He has honed his skills in data mining and wrangling, revenue modelling, portfolio management, financial risk analysis, risk and compliance assessments, market study and research, and budgetting and planning. <br>
 
-<p class='aboutme'>When not working on his data analytics projects, Sandro enjoys spending time reading fiction and non-fiction book, going to the gym and doing functional training, and spending time with his family.</p>
+This website is where I'll be sharing my journey of mastering the art and science of data science and analytics, sharing my past projects, and posting about the topics that really get me going. So, stay tuned and let's explore this exciting world together!</p>
 
-<p class='aboutme'>
-This webite will act my journal in mastering the art and science of data science and analytics. Stay tuned as I will be placing my past projects, and will also post on topics that interests me. </p>
 
 # Education
 

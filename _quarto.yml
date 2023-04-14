@@ -4,6 +4,9 @@ project:
 
 website:
   title: "Sandro Luis R. Silva"
+  favicon: "images/profile.png"
+  twitter-card: true
+
   navbar:
     left:
       - text: Home
