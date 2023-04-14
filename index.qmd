@@ -60,7 +60,7 @@ This website is where I'll be sharing my journey of mastering the art and scienc
 <p class='company'>Epimetrics, Inc. with Philippine Council for Health Research and Development</p>
 
 <strong> Private Consultant for Mathematical Modelling </strong><br>
-<p class='company'>Aboitiz Power Corporation</p>
+<p class='company'>Philippine Institute for Development Studies (PIDS)</p>
 
 <strong> Margin Optimization Specialist </strong><br>
 <p class='company'>Aboitiz Power Corporation</p>
