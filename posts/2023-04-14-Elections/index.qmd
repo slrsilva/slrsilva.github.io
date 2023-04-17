@@ -1,0 +1,325 @@
+---
+title: "Regional Voting Preferences in the 2019 Philippine Senatorial Elections"
+description: "Looks like voting in the Philippines is all about location, location, location! Literacy and religion may not be factors, but hometown pride definitely is."
+date: 2022-04-17
+categories: [python]
+image: thumbnail.jpeg
+# include-in-header: animation.html
+format:
+  html:
+    code-fold: true 
+jupyter: python3
+---
+
+<!-- <h4>Looks like voting in the Philippines is all about location, location, location! Literacy and religion may not be factors, but hometown pride definitely is.</h4> -->
+![](thumbnail.jpeg)
+
+<h1>Overview</h1>
+
+Original submission was last 2019-05-29.
+
+This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class, as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions:
+
+<h1>Acknowledgements</h1>
+
+This analysis was done together with my Lab partner, Geogre Esleta.
+
+
+<ol>
+<li>  How did the various administrative regions of the Philippines voted for their senators?
+<li>  Is the voter preference homogeneous across the country, or is there a preferred candidate or party per region? More specifically, how does (1) religious affiliation, (2) educational attainment, and (2) sex play a major role on how the voters select their candidates.
+</ol>
+
+<h2>Load Requirement Package</h2>
+
+Before anything else, let us first load all important modules for this exercise.
+```{python}
+# | eval: false
+import os
+import io
+import re
+import time
+import glob
+import requests
+import urllib.request
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+import seaborn as sns
+```
+It is important to identify the datasets we are going to use for this exercise. The two identified datasets the group intends to use are: the 2019 National Data and the 2015-2016 Census data.
+
+With regards to 2019 National data, the team used a web scapper provided Prof. Alis. The web scapper downloaded the election results from the Commission of Elections' 2019 National and Local Elections website. The results were then stored in a local repository which is then easily accesible for the team. The 2019 elections results are broken down into two main directories: results and contest. In this exercise, the team will explore both directories to map out a comprehensive summary of the 2019 senatorial and party elections.
+
+Secondly, the 2015-2016 Census data has already been stored in a local repository for easier access. One of the main reasons why the team decided to use the 2015-2016 Census data is because of the lack of availability of recent data. The Philippine Statistics Authority only releases a comprehensive census survey ever six years. However for the purpose of this exercise, the team has agreed that the 2015-2016 census data can act as an appproximate for today's population.
+
+<h2>Methodology</h2>
+
+<h3>Step 1: Extract and collect the 2019 Elections (Results) data</h3>
+
+The first directory to explore is the 2019 Election `results`. The `results` directory contains all electoral results from a regional level down to the barangay level. For each level, a specific `coc.json` file is stored. This file contains all electoral results data and metadata for both national and local elections. However for the purposes of this analysis, we will only look at the aggregated elections data at the regional level. The files that we are interested are the coc.json files associated to each province, as these files contain the metadata and data on the election results.
+
+The main structure of each coc.json file contains the following main keys: `vbc`, `rs`, `sts`, `obs`, and `cos`. For the purpose of this exercise, the important key the group needs to extract is the `rs` key as this provides the each candidate's total votes per area. 
+Under the `rs` key, the following keys can be found: `cc`, `bo`, `v`, `tot`, `per`, and `ser`. Cross referencing these keys with official statements and comelec documentations suggests that important keys are as follows: `cc` pertaining to contest_type, `bo` pertaining to the candidate_id, and `v` pertaining to votes_per_province.
+
+| Paremeter | Description |
+|:-----|------|
+| cc   | Contestant Code |
+| bo  |  Contestant ID |
+| v    | Total Votes Per Contestant |
+| tot    |  Total Votes Per Province |
+
+However, it must be pointed out that the available data only goes as high as provincial data. If we want to process the provincial level, the team will have to aggregate the data up.
+
+The group created utility functions for easier retrieval of the provincial elections datasets. The purpose for the utility functions (and future utility functions) are for initial cleaning and manipulations. This is to ensure each dataset is ready for aggregation.
+
+The `get_province_coc` method unpacks each key and value from the `coc.json` dictionary into a cleaned up dataframe. In addition, the method identifies which region and province the file originated from by examining the filepath that was passed.
+
+The `get_all_province_coc` method is a walker that goes through each of the results directory. The walker checks if the filename has an equal value to `coc.json`. If a `coc.json `was located, the `get_province_coc` method is applied with the filepath as the parameter. The resulting dataframe is then appended to a master dataframe for further extraction and analysis. For this exercise, the group only had to extract data up to the regional and provincial levels so only three wildcard were use for the `glob` walker.
+
+Special methods (`get_ncr_coc` and `get_all_ncr_coc`) were established to get the cities' `coc.json`. For the case of the NCR cities, theire associated `coc.json` files were one directory lower.
+
+<h4>`get_province_coc` function</h4>
+```{python}
+#| eval: false
+def get_province_coc(filepath):
+    """
+    Loads a single coc file. 
+
+    Adds additional columns `region` and `province to the DataFrame,
+    depending on filepath.
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe
+    """
+    output = []
+    with open(filepath, 'r') as f:
+        dirpath, filepath = os.path.split(filepath)
+        region = dirpath.split('/')[-2]
+        province = dirpath.split('/')[-1]
+        data = json.load(f)
+        for each in data['rs']:
+            row = [float(element) for element in list(each.values())]
+            output.append([data['vbc']] + row + [region] + [province])
+    df = pd.DataFrame(output,
+                      columns=['vbc', 'cc', 'bo', 'v', 'tot', 'per', 'ser',
+                               'region', 'province'])
+    return df
+
+```
+
+<h4>`get_all_province_coc` function</h4>
+```{python}
+#| eval: false
+def get_all_province_coc(tree):
+    """
+    Loads all province COC files and saves them to a dataframe
+
+    Checks the filepath if filename is 'coc.json'
+
+    Created a new column to deal with the reclassification of
+        "NEGROS ORIENTAL" and "NEGROS OCCIDENTAL" to "NIR" 
+            to match the PSA 2016 dataset.
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe
+    """
+    total = pd.DataFrame()
+    for file in glob.glob(tree):
+        if os.path.basename(file) == 'coc.json':
+            df = get_province_coc(file)
+            total = total.append(df)
+    total.rename(columns={'region': 'region_raw'}, inplace=True)
+    total['region'] = total['region_raw'].copy()
+    total.loc[(total['province'] == "NEGROS ORIENTAL") |
+              (total['province'] == "NEGROS OCCIDENTAL"), 'region'] = 'NIR'
+    return total
+```
+
+<h4>`get_ncr_coc` function</h4>
+```{python}
+#| eval: false   
+def get_ncr_coc(filepath):
+    """
+    Loads a single coc file. 
+
+    Adds additional columns `region` and `province to the DataFrame,
+    depending on filepath.
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe    
+
+    """
+    output = []
+    with open(filepath, 'r') as f:
+        dirpath, filepath = os.path.split(filepath)
+        region = dirpath.split('/')[-3]
+        province = dirpath.split('/')[-2]
+        data = json.load(f)
+        for each in data['rs']:
+            row = [float(element) for element in list(each.values())]
+            output.append([data['vbc']] + row + [region] + [province])
+    df = pd.DataFrame(output,
+                      columns=['vbc', 'cc', 'bo', 'v', 'tot', 'per', 'ser',
+                               'region', 'province'])
+    return df
+```
+
+<h4>`get_all_ncr_coc` function</h4>
+```{python}
+#| eval: false
+def get_all_ncr_coc(tree):
+    """
+    Loads all province COC files and saves them to a dataframe
+
+    Checks the filepath if filename is 'coc.json'
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe
+    """
+    total = pd.DataFrame()
+    for file in glob.glob(tree):
+        if file.split('/')[7] == 'NCR':
+            if os.path.basename(file) == 'coc.json':
+                df = get_ncr_coc(file)
+                total = total.append(df)
+    total.rename(columns={'region': 'region_raw'}, inplace=True)
+    total['region'] = total['region_raw'].copy()
+    return total
+```
+
+
+#### With these utility functions inplace, the team can now apply these methods for easier access to the 2019 elections data. 
+
+We can now compile all of the election results with the following line:
+
+```{python}
+#| eval: false
+tree = '/mnt/data/public/elections/nle2019/results/*/*/*'
+ncr_tree = '/mnt/data/public/elections/nle2019/results/*/*/*/*'
+df_results = get_all_province_coc(tree)
+df_results = df_results.append(get_all_ncr_coc(ncr_tree))
+df_results.drop_duplicates(inplace=True)
+```
+
+Let's see what we have:
+
+| vbc | cc | bo | v | tot | per | ser | region_raw | province | region |
+|:--|--|---|---|---|---|---|---|---|---|
+| 0 |	89550 |	1.0 |	1.0 |	2004.0 |	1708769.0 |	0.11 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |
+1 |	89550 |	1.0 |	2.0 |	1607.0 |	1708769.0 |	0.09 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+2 |		89550 |		1.0 |		3.0 |		8772.0 |		1708769.0 |	0.51 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+3 |		89550 |	1.0 |	4.0 |	1767.0 |	1708769.0 |	0.10 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+4 |		89550 |	1.0 |	5.0 |	5068.0 |	1708769.0 |	0.29 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+: {tbl-colwidths="[5,10,5,5,10,10,5,10,10,30]"}
+
+### Next, let us examine the obtained dataset with actual election results. 
+
+By cross checking the results with [Comelec data](https://www.comelec.gov.ph/?r=2019NLE/ListsOfCandidates/CertifiedListofCandidates), we can identify the senators and party names.
+
+Just to check our data, we can look at an example senator from the dataset. By choosing `cc=1` and `bo=46`, we are actually highlighting Imee Marcos' senatorial candidacy results.
+
+```{python}
+#| eval: false
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_marcos = df_results.query('cc == 1 & bo == 46').copy()
+df_marcos.groupby('region').sum()['v'].sort_values(
+    ascending=True).plot.barh(figsize=(10, 10),
+                              title='Contestant: 46 - Imee Marcos',
+                              color='#BF5209', ax=ax);
+```
+
+![](image1.png)
+
+Additionally, let us check some descriptive statistics for the 2019 Elections dataset. More specifically, let us examine the `v` or `votes` column. The group will be highly dependent on the `votes` data so let us first do some initial statistics and visualizations.
+
+```{python}
+#| eval: false
+df_test = df_results.groupby(['region', 'province'])['v'].sum().to_frame()
+df_test = df_test.rename(columns={'v': 'votes'})
+df_test.head()
+```
+
+	votes
+| region | province | votes |
+|:--|--|--|
+| BARMM	| BASILAN	| 2093067.0 |
+| 	| LANAO DEL SUR| 4770462.0 |
+| 	| MAGUINDANAO	| 5917983.0 |
+| 	| SULU	| 3529555.0 |
+| 	| TAWI-TAWI	| 1874486.0 |
+| CAR	| ABRA	| 1923481.0 |
+| 	| APAYAO	| 703002.0 |
+| 	| BENGUET	| 2426397.0 |
+| 	| IFUGAO	| 1408688.0 |
+| 	| KALINGA	| 1621414.0 |
+| 	| MOUNTAIN PROVINCE	| 1074249.0 |
+| NCR	| NATIONAL CAPITAL REGION - FOURTH DISTRICT	| 22896771.0 |
+| 	| NATIONAL CAPITAL REGION - MANILA	| 13461229.0 |
+| 	| NATIONAL CAPITAL REGION - SECOND DISTRICT	| 29803007.0 |
+| 	| NATIONAL CAPITAL REGION - THIRD DISTRICT	| 18481014.0 |
+| 	| TAGUIG - PATEROS	| 10018306.0 |
+
+
+Just to explore, the code and image below shows the total votes in region 3. Notice that Bulacan has the highest number of votes, followed by Nueva Ecija, then Pampanga.
+
+```{python}
+#| eval: false
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['REGION III',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![Votes Distribution in Region III](image2.png){fig-align="left"}
+
+Here we explore the vote distribution in the National Capital Region. The classification of district and cities were broken down by area (Manila, Taguig-Pateros, Second District, Third District, and Fourth District).The top number of votes came from the second district (mainly because of Quezon City), followed by the Fourth District, then the Third District.
+
+```{python}
+#| eval: false
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['NCQ',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![Votes Distribution in the National Capital Region](image3.png){fig-align="left"}
+
+Next, we explore the distribution of votes in Region 4-A. Unsurprisingly, the population of votes is high in the population centers of Cavite, then Batangas, then Laguna.
+
+```{python}
+#| eval: false
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['REGION IV-A',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![Votes Distribution in the Region IV-A](image4.png){fig-align="left"}
+
+For now, let us also examine the distribution of election votes in region 7. Unsurprisingly, the votes are concentrated first in Cebu, followed by Bohol and Siquijor.
+
+```{python}
+#| eval: false
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['REGION VII',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![Votes Distribution in the Region VII](image5.png){fig-align="left"}
