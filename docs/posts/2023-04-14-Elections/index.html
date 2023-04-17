@@ -202,7 +202,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 Overview
 </h1>
 <p>Original submission was last 2019-05-29.</p>
-<p>This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class, as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions: <br></p>
+<p>This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class (Data Mining and Wrangling), as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions: <br></p>
 <ol>
 <li>
 How did the various administrative regions of the Philippines voted for their senators?
@@ -518,7 +518,7 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <p>Just to check our data, we can look at an example senator from the dataset. By choosing <code>cc=1</code> and <code>bo=46</code>, we are actually highlighting Imee Marcos’ senatorial candidacy results.</p>
 <div class="cell" data-execution_count="7">
 <details>
-<summary>Code</summary>
+<summary>Code of creating a bar graph for Imee Marcos highest voting province in ascending order</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>df_marcos <span class="op">=</span> df_results.query(<span class="st">'cc == 1 &amp; bo == 46'</span>).copy()</span>
@@ -1310,6 +1310,32 @@ Top Senator Per Region
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a> .reset_index())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Candidate Name</th>
+<th>Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>POE, GRACE</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td>MARCOS, IMEE</td>
+<td>2.0</td>
+</tr>
+<tr class="odd">
+<td>GO, BONG GO</td>
+<td>5.0</td>
+</tr>
+<tr class="even">
+<td>VILLAR, CYNTHIA</td>
+<td>10.0</td>
+</tr>
+</tbody>
+</table>
 <div class="cell" data-execution_count="21">
 <details>
 <summary>Code</summary>
@@ -1320,9 +1346,55 @@ Top Senator Per Region
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Rank'</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><img src="image8-rank.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Instances of candidate ranking 1 per province</figcaption><p></p>
+</figure>
+</div>
+<p>As we can see, Cynthia Villar was ranked 1st 10 times, followed by Bong Go at 5 times, Imee Marcos at 2 times, and Grace Poe 1 time.</p>
+<h3 class="anchored">
+Step 4: Finding the Dominant Party Per Region
+</h3>
+<p>There are three main political parties vying for the senatorial seats:</p>
+<ol>
+<li>
+Liberal Party
+</li><li>
+Nacionalista Party
+</li><li>
+Partito Demokratiko Pilipino Lakas ng Bayan (PDP-Laban)
+</li></ol>
+<p>We looked at the <font color="BF5209">dominant or majority political party</font> per administrative region, and identify if any regions have any affiliations to a certain party.</p>
+<div class="cell" data-execution_count="22">
+<details>
+<summary>Code to retrieve top Party Per Region</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df_party <span class="op">=</span> df_senators.groupby([<span class="st">'region_raw'</span>, <span class="st">'party_name'</span>]).agg({</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'votes_per_province'</span>: <span class="bu">sum</span>})</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>df_party[<span class="st">'rank'</span>] <span class="op">=</span> df_party.groupby(</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'region_raw'</span>)[<span class="st">'votes_per_province'</span>].rank(<span class="st">'dense'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>df_party.reset_index(inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>df_leading_party <span class="op">=</span> df_party[df_party[<span class="st">'rank'</span>] <span class="op">==</span> <span class="dv">1</span>].copy()</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>df_leading_party.columns <span class="op">=</span> [<span class="st">'Region'</span>, <span class="st">'Party'</span>, <span class="st">'Votes'</span>, <span class="st">'Rank'</span>]</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>df_leading_party.sort_values([<span class="st">'Region'</span>, <span class="st">'Rank'</span>], inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>df_leading_party</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<h3 class="anchored">
+Step 5: Finding the Dominant Coalition Per Region
+</h3>
+<h3 class="anchored">
+Step 6: Is Demographics Related To Voting Preferences?
+</h3>
+<h3 class="anchored">
+Step 7: Is religion related to voting preference?
+</h3>
+<h3 class="anchored">
+Conclusion
+</h3>
 <hr>
-<p>Acknowledgements:</p>
-<p>Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/</p>
+<hr>
+<p><i class="appendix">Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/</i></p>
 
 
 </section>

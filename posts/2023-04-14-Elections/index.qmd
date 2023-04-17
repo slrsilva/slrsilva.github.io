@@ -10,6 +10,9 @@ format:
     code-fold: true 
     css: styles.css
 jupyter: python3
+editor: 
+  render-on-save: true
+
 ---
 
 <!-- <h4>Looks like voting in the Philippines is all about location, location, location! Literacy and religion may not be factors, but hometown pride definitely is.</h4> -->
@@ -19,7 +22,7 @@ jupyter: python3
 
 Original submission was last 2019-05-29.
 
-This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class, as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions: <br>
+This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class (Data Mining and Wrangling), as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions: <br>
 
 <ol>
 <li>  How did the various administrative regions of the Philippines voted for their senators?
@@ -247,6 +250,7 @@ Just to check our data, we can look at an example senator from the dataset. By c
 
 ```{python}
 #| eval: false
+#| code-summary: Code of creating a bar graph for Imee Marcos highest voting province in ascending order
 fig, ax = plt.subplots()
 ax.set_xlabel('Votes')
 df_marcos = df_results.query('cc == 1 & bo == 46').copy()
@@ -255,6 +259,7 @@ df_marcos.groupby('region').sum()['v'].sort_values(
                               title='Contestant: 46 - Imee Marcos',
                               color='#BF5209', ax=ax);
 ```
+
 
 ![](image1.png)
 
@@ -604,6 +609,14 @@ Top Candiate Per Region
     'Candidate Name')['Rank'].sum().to_frame().sort_values(by='Rank')
  .reset_index())
 ```
+
+| Candidate Name | Rank  |
+|----------------|-------|
+| POE, GRACE     | 1.0   |
+| MARCOS, IMEE   | 2.0   |
+| GO, BONG GO    | 5.0   |
+| VILLAR, CYNTHIA| 10.0  |
+
 ```{python}
 #| eval: false
  fig, ax = plt.subplots()
@@ -612,7 +625,41 @@ Top Candiate Per Region
  .barh(color='#BF5209', ax=ax));
 ax.set_xlabel('Rank');
 ```
----
-Acknowledgements:
+![Instances of candidate ranking 1 per province](image8-rank.png){fig-align="left"}
 
-Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/
+As we can see, Cynthia Villar was ranked 1st 10 times, followed by Bong Go at 5 times, Imee Marcos at 2 times, and Grace Poe 1 time.
+
+<h3>Step 4: Finding the Dominant Party Per Region</h3>
+There are three main political parties vying for the senatorial seats:
+
+<ol>
+<li> Liberal Party
+<li> Nacionalista Party
+<li> Partito Demokratiko Pilipino Lakas ng Bayan (PDP-Laban)
+</ol>
+
+We looked at the <font color="BF5209">dominant or majority political party</font> per administrative region, and identify if any regions have any affiliations to a certain party.
+
+```{python}
+#| eval: false
+#| code-summary: Code to retrieve top Party Per Region
+
+df_party = df_senators.groupby(['region_raw', 'party_name']).agg({
+    'votes_per_province': sum})
+df_party['rank'] = df_party.groupby(
+    'region_raw')['votes_per_province'].rank('dense', ascending=False)
+df_party.reset_index(inplace=True)
+df_leading_party = df_party[df_party['rank'] == 1].copy()
+df_leading_party.columns = ['Region', 'Party', 'Votes', 'Rank']
+df_leading_party.sort_values(['Region', 'Rank'], inplace=True)
+df_leading_party
+```
+
+<h3>Step 5: Finding the Dominant Coalition Per Region</h3>
+<h3>Step 6: Is Demographics Related To Voting Preferences?</h3>
+<h3>Step 7: Is religion related to voting preference? </h3>
+<h3>Conclusion</h3>
+---
+
+---
+<i class='appendix'>Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/</i>
