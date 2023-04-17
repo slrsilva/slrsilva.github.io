@@ -2,7 +2,7 @@
 title: "Regional Voting Preferences in the 2019 Philippine Senatorial Elections"
 description: "Looks like voting in the Philippines is all about location, location, location! Literacy and religion may not be factors, but hometown pride definitely is."
 date: 2022-04-17
-categories: [python]
+categories: [python, eda, geospatial]
 image: thumbnail.jpeg
 # include-in-header: animation.html
 format:
@@ -259,12 +259,11 @@ Additionally, let us check some descriptive statistics for the 2019 Elections da
 
 ```{python}
 #| eval: false
-df_test = df_results.groupby(['region', 'province'])['v'].sum().to_frame()
-df_test = df_test.rename(columns={'v': 'votes'})
-df_test.head()
+df_regions = df_results.groupby(['region', 'province'])['v'].sum().to_frame()
+df_regions = df_regions.rename(columns={'v': 'votes'})
+df_regions.head()
 ```
 
-	votes
 | region | province | votes |
 |:--|--|--|
 | BARMM	| BASILAN	| 2093067.0 |
@@ -324,6 +323,27 @@ ax.set_xlabel('Votes')
 df_test.loc['REGION VII',"votes"].plot.barh(color='#BF5209', ax=ax);
 ```
 ![Votes Distribution in the Region VII](image5.png){fig-align="left"}
+
+To match the contestant ID to the contestant name, the `contest` files were also downloaded from the [Commission of Elections' 2019 National and Local Elections website](https://2019electionresults.comelec.gov.ph/#/dashboard) and stored in the local repository. Similar to the `results` directory, the `contest` directory contained json files for each contest type/position. Upon inspection of a sample file within the directory, the following values were obtained:
+
+
+The pertinent keys from each json files were:
+   
+| Parameter | Description               |
+|-----------|---------------------------|
+|   cc      | Contest code              |
+|   cn      | Contest code name - location |
+|   ccc     | Contest code name         |
+|   type    | Contest type              |
+|   bos     | list of candidate parameters|
+
+Under the `bos` key, we can extract each of the candidates' parameters. The more useful ones for the group's study include:
+
+| Parameter | Description               |
+|-----------|---------------------------|
+|   boc     | Contestant ID             |
+|   bon     | Contestant Name           |
+|   pn      | Party Name                |
 
 <h3>Step 2: Extract and collect the 2019 Elections (Contestant) data</h3>
 
@@ -472,7 +492,123 @@ array(['REGION I', 'REGION IV-B', 'BARMM', 'REGION II', 'REGION III',
 ```
 
 
+<h3>Step 3: Load `Geopandas` for geospatial processing</h3>
 
+<h4>Loading the geospatial data </h4>
+The Philippines is composed of **seventeen (17) administrative regions**. We can use the `geopandas` module to manage and pre-process geospatial data.
+
+Let us first load up a geopandas graph of the Philippines.
+
+
+```{python}
+#| eval: false
+fig, ax = plt.subplots(1, figsize=(10, 15), frameon=True)
+
+ph0 = gpd.GeoDataFrame.from_file("ph_regions.shp")
+ph0.plot(ax=ax, cmap='Greens', edgecolor='#555555', k=18)
+ax.set_title('Regions of the Philippines')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['bottom'].set_visible(False)
+ax.spines['left'].set_visible(False)
+
+for ind, row in ph0.iterrows():
+    ax.text(row["geometry"].centroid.x, row["geometry"].centroid.y,
+            row["region"])
+```
+
+![Map of the Philippines](image6-map.png){fig-align="left"}
+
+<h4>Looking at Senatorial Results</h4>
+Let us look at the senatorial candidates. Let us total up the votes by candidate and see the top 12 winners.
+
+| Index | Candidate               | Votes       |
+|-------|------------------------|-------------|
+| 61    | VILLAR, CYNTHIA         | 23653546.0  |
+| 54    | POE, GRACE              | 20877585.0  |
+| 33    | GO, BONG GO             | 18979132.0  |
+| 18    | CAYETANO, PIA           | 18287782.0  |
+| 23    | DELA ROSA, BATO         | 17396249.0  |
+| 7     | ANGARA, EDGARDO SONNY   | 16826634.0  |
+| 39    | LAPID, LITO             | 16181906.0  |
+| 45    | MARCOS, IMEE            | 14735294.0  |
+| 59    | TOLENTINO, FRANCIS      | 14264142.0  |
+| 15    | BONG REVILLA, RAMON JR  | 13899831.0  |
+| 14    | BINAY, NANCY            | 13864931.0  |
+| 53    | PIMENTEL, KOKO          | 13529531.0  |
+
+
+Let's visualize this with a plot:
+```{python}
+#| eval: false
+fig, ax = plt.subplots(figsize=(15,8))
+plt.rcParams.update({'font.size': 14})
+df_senator.set_index('Candidate').head(12).sort_values(
+    by='Votes', ascending=True).plot.barh(ax=ax,
+    title='Top 12 Candidates, in Millions', color='#BF5209', legend=False);
+ax.set_xlabel('Total Votes');im
+```
+![Top 12 Senators by vote](image7-top12.png){fig-align="left"}
+
+<h4>Top Senator Per Region</h4>
+
+We want to find out won across all the regions. If there is any bias for cetain candidates.
+Based on our findings, we can see that candidate Cynthia Villar won majority of the regions. 
+
+It is interesting to note that the top ranking senator for Ilocos Region (Region I) and the Cordillera Administrative Region (CAR) is **Imee Marcos**, which hails from that region. This confirms that there is a "Solid North", and that support for the Marcoses still exists in that area.
+
+For the Mindanao regions, the top candidate is **Bong Go**, former special assistant to President Duterte, who is from Mindanao.
+
+These show that Philippine politics is **very regional in nature**. Voters will naturally support their hometown candidate, regardless of the issues surrounding that candidate. 
+
+```{python}
+#| eval: false
+df_senator_region = df_senators.groupby(
+    ['region', 'candidate_name']).agg({'votes_per_province': sum})
+df_senator_region['rank'] = df_senator_region.groupby(
+    'region')['votes_per_province'].rank('dense', ascending=False)
+df_senator_region = df_senator_region[df_senator_region['rank'] == 1].reset_index()
+df_senator_region.columns = ['Region', 'Candidate Name', 'Votes', 'Rank']
+df_senator_region
+```
+
+Top Candiate Per Region
+
+|    | Region   | Candidate Name   |      Votes |   Rank |
+|---:|:---------|:----------------|-----------:|-------:|
+|  0 | BARMM    | GO, BONG GO      |   768037   |    1   |
+|  1 | CAR      | MARCOS, IMEE     |   348303   |    1   |
+|  2 | NCR      | VILLAR, CYNTHIA  |  3345089   |    1   |
+|  3 | NIR      | VILLAR, CYNTHIA  |   856992   |    1   |
+|  4 | REGION I | MARCOS, IMEE     |  1661318   |    1   |
+|  5 | REGION II| VILLAR, CYNTHIA  |   915393   |    1   |
+|  6 | REGION III| VILLAR, CYNTHIA |  3056167   |    1   |
+|  7 | REGION IV-A| VILLAR, CYNTHIA |  3660112   |    1   |
+|  8 | REGION IV-B| VILLAR, CYNTHIA |   688494   |    1   |
+|  9 | REGION IX| GO, BONG GO      |   663927   |    1   |
+| 10 | REGION V | POE, GRACE       |  1417114   |    1   |
+| 11 | REGION VI| VILLAR, CYNTHIA  |  1064681   |    1   |
+| 12 | REGION VII| VILLAR, CYNTHIA |  1307605   |    1   |
+| 13 | REGION VIII| VILLAR, CYNTHIA|  1132757   |    1   |
+| 14 | REGION X | GO, BONG GO      |   949392   |    1   |
+| 15 | REGION XI| GO, BONG GO      |  1002771   |    1   |
+| 16 | REGION XII| VILLAR, CYNTHIA |   983354   |    1   |
+| 17 | REGION XIII| GO, BONG GO    |   777931   |    1   |
+
+```{python}
+#| eval: false
+(df_senator_region[df_senator_region['Rank'] == 1].reset_index().groupby(
+    'Candidate Name')['Rank'].sum().to_frame().sort_values(by='Rank')
+ .reset_index())
+```
+```{python}
+#| eval: false
+ fig, ax = plt.subplots()
+(df_senator_region[df_senator_region['Rank'] == 1].reset_index().groupby(
+    'Candidate Name')['Rank'].sum().to_frame().sort_values(by='Rank').plot
+ .barh(color='#BF5209', ax=ax));
+ax.set_xlabel('Rank');
+```
 ---
 Acknowledgements:
 

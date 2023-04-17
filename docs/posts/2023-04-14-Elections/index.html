@@ -165,6 +165,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </div>
                           <div class="quarto-categories">
                 <div class="quarto-category">python</div>
+                <div class="quarto-category">eda</div>
+                <div class="quarto-category">geospatial</div>
               </div>
                   </div>
   </div>
@@ -541,12 +543,11 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <div class="cell" data-execution_count="8">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_test <span class="op">=</span> df_results.groupby([<span class="st">'region'</span>, <span class="st">'province'</span>])[<span class="st">'v'</span>].<span class="bu">sum</span>().to_frame()</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>df_test <span class="op">=</span> df_test.rename(columns<span class="op">=</span>{<span class="st">'v'</span>: <span class="st">'votes'</span>})</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df_test.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_regions <span class="op">=</span> df_results.groupby([<span class="st">'region'</span>, <span class="st">'province'</span>])[<span class="st">'v'</span>].<span class="bu">sum</span>().to_frame()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>df_regions <span class="op">=</span> df_regions.rename(columns<span class="op">=</span>{<span class="st">'v'</span>: <span class="st">'votes'</span>})</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df_regions.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<pre><code>votes</code></pre>
 <table class="table">
 <thead>
 <tr class="header">
@@ -642,9 +643,9 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <div class="cell" data-execution_count="9">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'REGION III'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'REGION III'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="quarto-figure quarto-figure-left">
@@ -657,9 +658,9 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <div class="cell" data-execution_count="10">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'NCQ'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'NCQ'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="quarto-figure quarto-figure-left">
@@ -672,9 +673,9 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <div class="cell" data-execution_count="11">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'REGION IV-A'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'REGION IV-A'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="quarto-figure quarto-figure-left">
@@ -687,9 +688,9 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <div class="cell" data-execution_count="12">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'REGION VII'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Votes'</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df_test.loc[<span class="st">'REGION VII'</span>,<span class="st">"votes"</span>].plot.barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="quarto-figure quarto-figure-left">
@@ -698,6 +699,61 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <p></p><figcaption class="figure-caption">Votes Distribution in the Region VII</figcaption><p></p>
 </figure>
 </div>
+<p>To match the contestant ID to the contestant name, the <code>contest</code> files were also downloaded from the <a href="https://2019electionresults.comelec.gov.ph/#/dashboard">Commission of Elections’ 2019 National and Local Elections website</a> and stored in the local repository. Similar to the <code>results</code> directory, the <code>contest</code> directory contained json files for each contest type/position. Upon inspection of a sample file within the directory, the following values were obtained:</p>
+<p>The pertinent keys from each json files were:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cc</td>
+<td>Contest code</td>
+</tr>
+<tr class="even">
+<td>cn</td>
+<td>Contest code name - location</td>
+</tr>
+<tr class="odd">
+<td>ccc</td>
+<td>Contest code name</td>
+</tr>
+<tr class="even">
+<td>type</td>
+<td>Contest type</td>
+</tr>
+<tr class="odd">
+<td>bos</td>
+<td>list of candidate parameters</td>
+</tr>
+</tbody>
+</table>
+<p>Under the <code>bos</code> key, we can extract each of the candidates’ parameters. The more useful ones for the group’s study include:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>boc</td>
+<td>Contestant ID</td>
+</tr>
+<tr class="even">
+<td>bon</td>
+<td>Contestant Name</td>
+</tr>
+<tr class="odd">
+<td>pn</td>
+<td>Party Name</td>
+</tr>
+</tbody>
+</table>
 <h3 class="anchored">
 Step 2: Extract and collect the 2019 Elections (Contestant) data
 </h3>
@@ -712,80 +768,80 @@ Step 2: Extract and collect the 2019 Elections (Contestant) data
 <div class="cell" data-execution_count="13">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_contestant_attrib(filepath):</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns the contestant json file into a dataframe</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co">    filepath   : string</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co">    df         : pd.DataFrame of contestnat attributes</span></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    contestants_values <span class="op">=</span> []</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(filepath, <span class="st">'r'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> json.load(<span class="bu">file</span>)</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>        attrib_keys <span class="op">=</span> [key <span class="cf">for</span> key <span class="kw">in</span> <span class="bu">list</span>(data.keys())</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>                       <span class="cf">if</span> <span class="bu">isinstance</span>(key, (<span class="bu">str</span>, <span class="bu">float</span>, <span class="bu">int</span>))]</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        attrib_values <span class="op">=</span> [value <span class="cf">for</span> value <span class="kw">in</span> <span class="bu">list</span>(data.values())</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>                         <span class="cf">if</span> <span class="bu">isinstance</span>(value, (<span class="bu">str</span>, <span class="bu">float</span>, <span class="bu">int</span>))]</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        contest_values <span class="op">=</span> [<span class="bu">list</span>(contest.values()) <span class="cf">for</span> contest <span class="kw">in</span> data[<span class="st">'bos'</span>]]</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        df <span class="op">=</span> pd.DataFrame(contest_values,</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>                          columns<span class="op">=</span><span class="bu">list</span>(data[<span class="st">'bos'</span>][<span class="dv">0</span>].keys()))</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> k, v <span class="kw">in</span> <span class="bu">zip</span>(attrib_keys, attrib_values):</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>            df[k] <span class="op">=</span> v</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_contestants_attrib(filepath):</span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns ALL contestant json files into a dataframe</span></span>
-<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
-<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
-<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="co">    filepath   : string</span></span>
-<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
-<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
-<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="co">    df         : pd.DataFrame of contestant attributes</span></span>
-<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.DataFrame()</span>
-<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> each_filepath <span class="kw">in</span> glob.glob(filepath):</span>
-<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>        df <span class="op">=</span> df.append(get_contestant_attrib(each_filepath))</span>
-<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>    senators <span class="op">=</span> df[df.cc <span class="op">==</span> <span class="dv">1</span>].copy()</span>
-<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>    senators[<span class="st">'bon'</span>] <span class="op">=</span> senators[<span class="st">'bon'</span>].<span class="bu">str</span>.extract(pat<span class="op">=</span><span class="st">'(.*?) \('</span>)</span>
-<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>    party <span class="op">=</span> df[df.cc <span class="op">==</span> <span class="dv">5567</span>].copy()</span>
-<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> senators.append(party)</span>
-<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>    df.drop_duplicates(inplace<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a>    df.rename(columns<span class="op">=</span>{<span class="st">'boc'</span>: <span class="st">'bo'</span>}, inplace<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>    otso <span class="op">=</span> [<span class="st">'AQUINO, BENIGNO BAM '</span>, <span class="st">'DIOKNO, CHEL'</span>, <span class="st">'HILBAY, PILO'</span>,</span>
-<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a>            <span class="st">'MACALINTAL, MACAROMY'</span>, <span class="st">'GUTOC, SAMIRA'</span>, <span class="st">'ALEJANO, GARY'</span>,</span>
-<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>            <span class="st">'ROXAS, MAR'</span>, <span class="st">'TAÑADA,LORENZO ERIN TAPAT'</span>]</span>
-<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>    hnp <span class="op">=</span> [<span class="st">'ANGARA, EDGARDO SONNY'</span>, <span class="st">'BONG REVILLA, RAMON JR'</span>, <span class="st">'CAYETANO, PIA'</span>,</span>
-<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a>           <span class="st">'DELA ROSA, BATO'</span>, <span class="st">'EJERCITO, ESTRADA JV'</span>, <span class="st">'ESTRADA, JINGGOY'</span>,</span>
-<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>           <span class="st">'GO, BONG GO'</span>, <span class="st">'MANGUDADATU, DONG'</span>, <span class="st">'MANICAD, JIGGY'</span>,</span>
-<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>           <span class="st">'MARCOS, IMEE'</span>, <span class="st">'PIMENTEL, KOKO'</span>, <span class="st">'TOLENTINO, FRANCIS'</span>, </span>
-<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>           <span class="st">'VILLAR, CYNTHIA'</span>]</span>
-<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> otso:</span>
-<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>        df.loc[df.bon <span class="op">==</span> o, <span class="st">'coalition'</span>] <span class="op">=</span> <span class="st">"Otso Diretso"</span></span>
-<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> h <span class="kw">in</span> hnp:</span>
-<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a>        df.loc[df.bon <span class="op">==</span> h, <span class="st">'coalition'</span>] <span class="op">=</span> <span class="st">"HNP"</span></span>
-<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">'coalition'</span>] <span class="op">=</span> df[<span class="st">'coalition'</span>].fillna(<span class="st">'None'</span>)</span>
-<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_contestant_attrib(filepath):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns the contestant json file into a dataframe</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">    filepath   : string</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">    df         : pd.DataFrame of contestnat attributes</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    contestants_values <span class="op">=</span> []</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(filepath, <span class="st">'r'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> json.load(<span class="bu">file</span>)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        attrib_keys <span class="op">=</span> [key <span class="cf">for</span> key <span class="kw">in</span> <span class="bu">list</span>(data.keys())</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>                       <span class="cf">if</span> <span class="bu">isinstance</span>(key, (<span class="bu">str</span>, <span class="bu">float</span>, <span class="bu">int</span>))]</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>        attrib_values <span class="op">=</span> [value <span class="cf">for</span> value <span class="kw">in</span> <span class="bu">list</span>(data.values())</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>                         <span class="cf">if</span> <span class="bu">isinstance</span>(value, (<span class="bu">str</span>, <span class="bu">float</span>, <span class="bu">int</span>))]</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        contest_values <span class="op">=</span> [<span class="bu">list</span>(contest.values()) <span class="cf">for</span> contest <span class="kw">in</span> data[<span class="st">'bos'</span>]]</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        df <span class="op">=</span> pd.DataFrame(contest_values,</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>                          columns<span class="op">=</span><span class="bu">list</span>(data[<span class="st">'bos'</span>][<span class="dv">0</span>].keys()))</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> k, v <span class="kw">in</span> <span class="bu">zip</span>(attrib_keys, attrib_values):</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>            df[k] <span class="op">=</span> v</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_contestants_attrib(filepath):</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns ALL contestant json files into a dataframe</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="co">    filepath   : string</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="co">    df         : pd.DataFrame of contestant attributes</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.DataFrame()</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> each_filepath <span class="kw">in</span> glob.glob(filepath):</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>        df <span class="op">=</span> df.append(get_contestant_attrib(each_filepath))</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>    senators <span class="op">=</span> df[df.cc <span class="op">==</span> <span class="dv">1</span>].copy()</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    senators[<span class="st">'bon'</span>] <span class="op">=</span> senators[<span class="st">'bon'</span>].<span class="bu">str</span>.extract(pat<span class="op">=</span><span class="st">'(.*?) \('</span>)</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>    party <span class="op">=</span> df[df.cc <span class="op">==</span> <span class="dv">5567</span>].copy()</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> senators.append(party)</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>    df.drop_duplicates(inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>    df.rename(columns<span class="op">=</span>{<span class="st">'boc'</span>: <span class="st">'bo'</span>}, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    otso <span class="op">=</span> [<span class="st">'AQUINO, BENIGNO BAM '</span>, <span class="st">'DIOKNO, CHEL'</span>, <span class="st">'HILBAY, PILO'</span>,</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>            <span class="st">'MACALINTAL, MACAROMY'</span>, <span class="st">'GUTOC, SAMIRA'</span>, <span class="st">'ALEJANO, GARY'</span>,</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>            <span class="st">'ROXAS, MAR'</span>, <span class="st">'TAÑADA,LORENZO ERIN TAPAT'</span>]</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>    hnp <span class="op">=</span> [<span class="st">'ANGARA, EDGARDO SONNY'</span>, <span class="st">'BONG REVILLA, RAMON JR'</span>, <span class="st">'CAYETANO, PIA'</span>,</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>           <span class="st">'DELA ROSA, BATO'</span>, <span class="st">'EJERCITO, ESTRADA JV'</span>, <span class="st">'ESTRADA, JINGGOY'</span>,</span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>           <span class="st">'GO, BONG GO'</span>, <span class="st">'MANGUDADATU, DONG'</span>, <span class="st">'MANICAD, JIGGY'</span>,</span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>           <span class="st">'MARCOS, IMEE'</span>, <span class="st">'PIMENTEL, KOKO'</span>, <span class="st">'TOLENTINO, FRANCIS'</span>, </span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>           <span class="st">'VILLAR, CYNTHIA'</span>]</span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> o <span class="kw">in</span> otso:</span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>        df.loc[df.bon <span class="op">==</span> o, <span class="st">'coalition'</span>] <span class="op">=</span> <span class="st">"Otso Diretso"</span></span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> h <span class="kw">in</span> hnp:</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>        df.loc[df.bon <span class="op">==</span> h, <span class="st">'coalition'</span>] <span class="op">=</span> <span class="st">"HNP"</span></span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">'coalition'</span>] <span class="op">=</span> df[<span class="st">'coalition'</span>].fillna(<span class="st">'None'</span>)</span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Let us run the <code>get_contestants_attrib</code>. This will be used later in the blog for our further analysis.</p>
 <div class="cell" data-execution_count="14">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>contestant_filepaths <span class="op">=</span> <span class="st">'/mnt/data/public/elections/nle2019/contests/*'</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>df_contestants <span class="op">=</span> get_contestants_attrib(contestant_filepaths)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>df_contestants.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>contestant_filepaths <span class="op">=</span> <span class="st">'/mnt/data/public/elections/nle2019/contests/*'</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>df_contestants <span class="op">=</span> get_contestants_attrib(contestant_filepaths)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>df_contestants.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="table">
@@ -933,43 +989,345 @@ Step 2: Extract and collect the 2019 Elections (Contestant) data
 <div class="cell" data-execution_count="15">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> merge_comelec(results, contestants):</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Merge results dataframe with contestants dataframe</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">    results    : pd.DataFrame</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co">    contestants: pd.DataFrame</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co">    df         : pd.DataFrame of contestant attributes</span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.merge(results, contestants, on<span class="op">=</span>[<span class="st">'bo'</span>, <span class="st">'cc'</span>], how<span class="op">=</span><span class="st">'left'</span>)</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> df.drop([<span class="st">'vbc'</span>, <span class="st">'boi'</span>, <span class="st">'to'</span>, <span class="st">'pc'</span>, <span class="st">'pcc'</span>, <span class="st">'pcy'</span>, <span class="st">'pcm'</span>,</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'pck'</span>, <span class="st">'ccc'</span>, <span class="st">'pre'</span>, <span class="st">'ser'</span>, <span class="st">'cn'</span>], axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    df.columns <span class="op">=</span> [<span class="st">'position'</span>, <span class="st">'candidate_id'</span>, <span class="st">'votes_per_province'</span>,</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'total_votes'</span>, <span class="st">'votes_in_pct'</span>, <span class="st">'region_raw'</span>, <span class="st">'province'</span>,</span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'region'</span>, <span class="st">'candidate_name'</span>, <span class="st">'party_name'</span>,</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'contest_position'</span>, <span class="st">'contest_type'</span>, <span class="st">'coalition'</span>]</span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> merge_comelec(results, contestants):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Merge results dataframe with contestants dataframe</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co">    results    : pd.DataFrame</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">    contestants: pd.DataFrame</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="co">    df         : pd.DataFrame of contestant attributes</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.merge(results, contestants, on<span class="op">=</span>[<span class="st">'bo'</span>, <span class="st">'cc'</span>], how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> df.drop([<span class="st">'vbc'</span>, <span class="st">'boi'</span>, <span class="st">'to'</span>, <span class="st">'pc'</span>, <span class="st">'pcc'</span>, <span class="st">'pcy'</span>, <span class="st">'pcm'</span>,</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'pck'</span>, <span class="st">'ccc'</span>, <span class="st">'pre'</span>, <span class="st">'ser'</span>, <span class="st">'cn'</span>], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    df.columns <span class="op">=</span> [<span class="st">'position'</span>, <span class="st">'candidate_id'</span>, <span class="st">'votes_per_province'</span>,</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'total_votes'</span>, <span class="st">'votes_in_pct'</span>, <span class="st">'region_raw'</span>, <span class="st">'province'</span>,</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'region'</span>, <span class="st">'candidate_name'</span>, <span class="st">'party_name'</span>,</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'contest_position'</span>, <span class="st">'contest_type'</span>, <span class="st">'coalition'</span>]</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Let’s merge the tables, then just check the unique regions using the <code>unique</code> method.</p>
 <div class="cell" data-execution_count="16">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>nle2019 <span class="op">=</span> merge_comelec(df_results, df_contestants)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>nle2019.region.unique()</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>array([<span class="st">'REGION I'</span>, <span class="st">'REGION IV-B'</span>, <span class="st">'BARMM'</span>, <span class="st">'REGION II'</span>, <span class="st">'REGION III'</span>,</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>       <span class="st">'REGION V'</span>, <span class="st">'REGION VI'</span>, <span class="st">'NIR'</span>, <span class="st">'REGION VII'</span>, <span class="st">'REGION VIII'</span>,</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>       <span class="st">'REGION IX'</span>, <span class="st">'REGION X'</span>, <span class="st">'REGION XI'</span>, <span class="st">'REGION XII'</span>, <span class="st">'REGION XIII'</span>,</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>       <span class="st">'REGION IV-A'</span>, <span class="st">'CAR'</span>, <span class="st">'NCR'</span>], dtype<span class="op">=</span><span class="bu">object</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>nle2019 <span class="op">=</span> merge_comelec(df_results, df_contestants)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>nle2019.region.unique()</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>array([<span class="st">'REGION I'</span>, <span class="st">'REGION IV-B'</span>, <span class="st">'BARMM'</span>, <span class="st">'REGION II'</span>, <span class="st">'REGION III'</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>       <span class="st">'REGION V'</span>, <span class="st">'REGION VI'</span>, <span class="st">'NIR'</span>, <span class="st">'REGION VII'</span>, <span class="st">'REGION VIII'</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>       <span class="st">'REGION IX'</span>, <span class="st">'REGION X'</span>, <span class="st">'REGION XI'</span>, <span class="st">'REGION XII'</span>, <span class="st">'REGION XIII'</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>       <span class="st">'REGION IV-A'</span>, <span class="st">'CAR'</span>, <span class="st">'NCR'</span>], dtype<span class="op">=</span><span class="bu">object</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<h3 class="anchored">
+Step 3: Load <code>Geopandas</code> for geospatial processing
+</h3>
+<h4 class="anchored">
+Loading the geospatial data
+</h4>
+<p>The Philippines is composed of <strong>seventeen (17) administrative regions</strong>. We can use the <code>geopandas</code> module to manage and pre-process geospatial data.</p>
+<p>Let us first load up a geopandas graph of the Philippines.</p>
+<div class="cell" data-execution_count="17">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">15</span>), frameon<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>ph0 <span class="op">=</span> gpd.GeoDataFrame.from_file(<span class="st">"ph_regions.shp"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>ph0.plot(ax<span class="op">=</span>ax, cmap<span class="op">=</span><span class="st">'Greens'</span>, edgecolor<span class="op">=</span><span class="st">'#555555'</span>, k<span class="op">=</span><span class="dv">18</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Regions of the Philippines'</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>ax.spines[<span class="st">'top'</span>].set_visible(<span class="va">False</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>ax.spines[<span class="st">'right'</span>].set_visible(<span class="va">False</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>ax.spines[<span class="st">'bottom'</span>].set_visible(<span class="va">False</span>)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>ax.spines[<span class="st">'left'</span>].set_visible(<span class="va">False</span>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ind, row <span class="kw">in</span> ph0.iterrows():</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    ax.text(row[<span class="st">"geometry"</span>].centroid.x, row[<span class="st">"geometry"</span>].centroid.y,</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>            row[<span class="st">"region"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><img src="image6-map.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Map of the Philippines</figcaption><p></p>
+</figure>
+</div>
+<h4 class="anchored">
+Looking at Senatorial Results
+</h4>
+<p>Let us look at the senatorial candidates. Let us total up the votes by candidate and see the top 12 winners.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Index</th>
+<th>Candidate</th>
+<th>Votes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>61</td>
+<td>VILLAR, CYNTHIA</td>
+<td>23653546.0</td>
+</tr>
+<tr class="even">
+<td>54</td>
+<td>POE, GRACE</td>
+<td>20877585.0</td>
+</tr>
+<tr class="odd">
+<td>33</td>
+<td>GO, BONG GO</td>
+<td>18979132.0</td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>CAYETANO, PIA</td>
+<td>18287782.0</td>
+</tr>
+<tr class="odd">
+<td>23</td>
+<td>DELA ROSA, BATO</td>
+<td>17396249.0</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>ANGARA, EDGARDO SONNY</td>
+<td>16826634.0</td>
+</tr>
+<tr class="odd">
+<td>39</td>
+<td>LAPID, LITO</td>
+<td>16181906.0</td>
+</tr>
+<tr class="even">
+<td>45</td>
+<td>MARCOS, IMEE</td>
+<td>14735294.0</td>
+</tr>
+<tr class="odd">
+<td>59</td>
+<td>TOLENTINO, FRANCIS</td>
+<td>14264142.0</td>
+</tr>
+<tr class="even">
+<td>15</td>
+<td>BONG REVILLA, RAMON JR</td>
+<td>13899831.0</td>
+</tr>
+<tr class="odd">
+<td>14</td>
+<td>BINAY, NANCY</td>
+<td>13864931.0</td>
+</tr>
+<tr class="even">
+<td>53</td>
+<td>PIMENTEL, KOKO</td>
+<td>13529531.0</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s visualize this with a plot:</p>
+<div class="cell" data-execution_count="18">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">15</span>,<span class="dv">8</span>))</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>plt.rcParams.update({<span class="st">'font.size'</span>: <span class="dv">14</span>})</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>df_senator.set_index(<span class="st">'Candidate'</span>).head(<span class="dv">12</span>).sort_values(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    by<span class="op">=</span><span class="st">'Votes'</span>, ascending<span class="op">=</span><span class="va">True</span>).plot.barh(ax<span class="op">=</span>ax,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">'Top 12 Candidates, in Millions'</span>, color<span class="op">=</span><span class="st">'#BF5209'</span>, legend<span class="op">=</span><span class="va">False</span>)<span class="op">;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Total Votes'</span>)<span class="op">;</span>im</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><img src="image7-top12.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Top 12 Senators by vote</figcaption><p></p>
+</figure>
+</div>
+<h4 class="anchored">
+Top Senator Per Region
+</h4>
+<p>We want to find out won across all the regions. If there is any bias for cetain candidates. Based on our findings, we can see that candidate Cynthia Villar won majority of the regions.</p>
+<p>It is interesting to note that the top ranking senator for Ilocos Region (Region I) and the Cordillera Administrative Region (CAR) is <strong>Imee Marcos</strong>, which hails from that region. This confirms that there is a “Solid North”, and that support for the Marcoses still exists in that area.</p>
+<p>For the Mindanao regions, the top candidate is <strong>Bong Go</strong>, former special assistant to President Duterte, who is from Mindanao.</p>
+<p>These show that Philippine politics is <strong>very regional in nature</strong>. Voters will naturally support their hometown candidate, regardless of the issues surrounding that candidate.</p>
+<div class="cell" data-execution_count="19">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df_senator_region <span class="op">=</span> df_senators.groupby(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    [<span class="st">'region'</span>, <span class="st">'candidate_name'</span>]).agg({<span class="st">'votes_per_province'</span>: <span class="bu">sum</span>})</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>df_senator_region[<span class="st">'rank'</span>] <span class="op">=</span> df_senator_region.groupby(</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'region'</span>)[<span class="st">'votes_per_province'</span>].rank(<span class="st">'dense'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>df_senator_region <span class="op">=</span> df_senator_region[df_senator_region[<span class="st">'rank'</span>] <span class="op">==</span> <span class="dv">1</span>].reset_index()</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>df_senator_region.columns <span class="op">=</span> [<span class="st">'Region'</span>, <span class="st">'Candidate Name'</span>, <span class="st">'Votes'</span>, <span class="st">'Rank'</span>]</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>df_senator_region</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Top Candiate Per Region</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"></th>
+<th style="text-align: left;">Region</th>
+<th style="text-align: left;">Candidate Name</th>
+<th style="text-align: right;">Votes</th>
+<th style="text-align: right;">Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">BARMM</td>
+<td style="text-align: left;">GO, BONG GO</td>
+<td style="text-align: right;">768037</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">CAR</td>
+<td style="text-align: left;">MARCOS, IMEE</td>
+<td style="text-align: right;">348303</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">NCR</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">3345089</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">NIR</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">856992</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">REGION I</td>
+<td style="text-align: left;">MARCOS, IMEE</td>
+<td style="text-align: right;">1661318</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">REGION II</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">915393</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">REGION III</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">3056167</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">REGION IV-A</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">3660112</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">REGION IV-B</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">688494</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">REGION IX</td>
+<td style="text-align: left;">GO, BONG GO</td>
+<td style="text-align: right;">663927</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">REGION V</td>
+<td style="text-align: left;">POE, GRACE</td>
+<td style="text-align: right;">1417114</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td style="text-align: left;">REGION VI</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">1064681</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">REGION VII</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">1307605</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">REGION VIII</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">1132757</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14</td>
+<td style="text-align: left;">REGION X</td>
+<td style="text-align: left;">GO, BONG GO</td>
+<td style="text-align: right;">949392</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">15</td>
+<td style="text-align: left;">REGION XI</td>
+<td style="text-align: left;">GO, BONG GO</td>
+<td style="text-align: right;">1002771</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td style="text-align: left;">REGION XII</td>
+<td style="text-align: left;">VILLAR, CYNTHIA</td>
+<td style="text-align: right;">983354</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">17</td>
+<td style="text-align: left;">REGION XIII</td>
+<td style="text-align: left;">GO, BONG GO</td>
+<td style="text-align: right;">777931</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+<div class="cell" data-execution_count="20">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(df_senator_region[df_senator_region[<span class="st">'Rank'</span>] <span class="op">==</span> <span class="dv">1</span>].reset_index().groupby(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Candidate Name'</span>)[<span class="st">'Rank'</span>].<span class="bu">sum</span>().to_frame().sort_values(by<span class="op">=</span><span class="st">'Rank'</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a> .reset_index())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="21">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a> fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>(df_senator_region[df_senator_region[<span class="st">'Rank'</span>] <span class="op">==</span> <span class="dv">1</span>].reset_index().groupby(</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Candidate Name'</span>)[<span class="st">'Rank'</span>].<span class="bu">sum</span>().to_frame().sort_values(by<span class="op">=</span><span class="st">'Rank'</span>).plot</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a> .barh(color<span class="op">=</span><span class="st">'#BF5209'</span>, ax<span class="op">=</span>ax))<span class="op">;</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Rank'</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <hr>
