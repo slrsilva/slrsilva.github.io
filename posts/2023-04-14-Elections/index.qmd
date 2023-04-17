@@ -8,6 +8,7 @@ image: thumbnail.jpeg
 format:
   html:
     code-fold: true 
+    css: styles.css
 jupyter: python3
 ---
 
@@ -323,3 +324,156 @@ ax.set_xlabel('Votes')
 df_test.loc['REGION VII',"votes"].plot.barh(color='#BF5209', ax=ax);
 ```
 ![Votes Distribution in the Region VII](image5.png){fig-align="left"}
+
+<h3>Step 2: Extract and collect the 2019 Elections (Contestant) data</h3>
+
+The group also created utility functions for easier retrieval of the contestant datasets. This is to ensure each dataset is ready for aggregation. 
+
+Similar to the `get_province_coc`, the `get_contestant_attrib` method unpacks each key and value from the `{contest_number}.json` dictionary into a cleaned up dataframe. The method converts the `bos` directory into an additional list, which will also be appended into the resulting dataframe. 
+
+There are two (2) major political coalitions fighting for the senate seats:
+
+1. Hugpong ng Pagbabago (HNP)
+2. Otso Diretso
+
+Similar to the `get_all_province_coc`, the `get_contestants_attrib` method is a walker that goes through each of the `contest` directory. The method will first append all `{contest_numer}.json` files into a singular dataframe. Next, the method creates a new column that identifies who among the senatorial candidates are part of the **Hugpong ng Pagbabago (HNP)** or **Otso Diretso campaign**.
+
+```{python}
+#| eval: false
+def get_contestant_attrib(filepath):
+    """
+    Returns the contestant json file into a dataframe
+
+    Parameters
+    ----------
+    filepath   : string
+
+    Returns
+    ----------
+    df         : pd.DataFrame of contestnat attributes
+
+    """
+
+    contestants_values = []
+    with open(filepath, 'r') as file:
+        data = json.load(file)
+        attrib_keys = [key for key in list(data.keys())
+                       if isinstance(key, (str, float, int))]
+        attrib_values = [value for value in list(data.values())
+                         if isinstance(value, (str, float, int))]
+        contest_values = [list(contest.values()) for contest in data['bos']]
+        df = pd.DataFrame(contest_values,
+                          columns=list(data['bos'][0].keys()))
+        for k, v in zip(attrib_keys, attrib_values):
+            df[k] = v
+    return df
+
+
+def get_contestants_attrib(filepath):
+    """
+    Returns ALL contestant json files into a dataframe
+
+    Parameters
+    ----------
+    filepath   : string
+
+    Returns
+    ----------
+    df         : pd.DataFrame of contestant attributes
+
+    """
+    df = pd.DataFrame()
+    for each_filepath in glob.glob(filepath):
+        df = df.append(get_contestant_attrib(each_filepath))
+    senators = df[df.cc == 1].copy()
+    senators['bon'] = senators['bon'].str.extract(pat='(.*?) \(')
+    party = df[df.cc == 5567].copy()
+    df = senators.append(party)
+    df.drop_duplicates(inplace=True)
+    df.rename(columns={'boc': 'bo'}, inplace=True)
+    otso = ['AQUINO, BENIGNO BAM ', 'DIOKNO, CHEL', 'HILBAY, PILO',
+            'MACALINTAL, MACAROMY', 'GUTOC, SAMIRA', 'ALEJANO, GARY',
+            'ROXAS, MAR', 'TAÑADA,LORENZO ERIN TAPAT']
+    hnp = ['ANGARA, EDGARDO SONNY', 'BONG REVILLA, RAMON JR', 'CAYETANO, PIA',
+           'DELA ROSA, BATO', 'EJERCITO, ESTRADA JV', 'ESTRADA, JINGGOY',
+           'GO, BONG GO', 'MANGUDADATU, DONG', 'MANICAD, JIGGY',
+           'MARCOS, IMEE', 'PIMENTEL, KOKO', 'TOLENTINO, FRANCIS', 
+           'VILLAR, CYNTHIA']
+    for o in otso:
+        df.loc[df.bon == o, 'coalition'] = "Otso Diretso"
+    for h in hnp:
+        df.loc[df.bon == h, 'coalition'] = "HNP"
+    df['coalition'] = df['coalition'].fillna('None')
+    return df
+```
+
+Let us run the `get_contestants_attrib`. This will be used later in the blog for our further analysis.
+
+
+```{python}
+#| eval: false
+contestant_filepaths = '/mnt/data/public/elections/nle2019/contests/*'
+df_contestants = get_contestants_attrib(contestant_filepaths)
+df_contestants.head()
+```
+
+<div class='table'>
+| bo | bon                 | boi    | to | pc | pn                                                 | pcc | pcy | pcm | pck | cc                 | cn | ccc     | ccn | pre      | type     | coalition    |
+|---:|:---|:---|---:|---:|:---|----:|----:|----:|----:|:--------|---:|:--------|----:|:---------|:---------|:-------------|
+| 37 | HILBAY, PILO        | 52.png | 37 |  2 | AKSYON DEMOKRATIKO                                 |   1 |   1 |   1 |   1 |   1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | Otso Diretso |
+|  7 | ALUNAN, RAFFY       | 53.png |  7 |  3 | BAGUMBAYAN VOLUNTEERS FOR A NEW PHILIPPINES         |   1 |   1 |   1 |   1 |   1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+| 14 | BALDEVARONA, BALDE  | 35.png | 14 |  7 | FILIPINO FAMILY PARTY                              |   1 |   1 |   1 |   1 |   1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+| 18 | CASIÑO, TOTI        | 20.png | 18 |  8 | KATIPUNAN NG DEMOKRATIKONG PILIPINO(KDP)            |   1 |   1 |   1 |   1 |    1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+| 21 | CHONG, GLENN        | 61.png | 21 |  8 | KATIPUNAN NG DEMOKRATIKONG PILIPINO(KDP)            |   1 |   1 |   1 |   1 |    1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+: {tbl-colwidths="[5,10,5,5,10,10,5,10,10,30]"}
+</div>
+
+We now have two dataframes: `df_results` containing the 2019 election results, and `df_contestants` containing the contestant information. These two dataframes can now be merged into a single dataframe. Let us also drop certain columns which we have deemed as unimportant.
+
+```{python}
+#| eval: false
+def merge_comelec(results, contestants):
+    """
+    Merge results dataframe with contestants dataframe
+
+    Parameters
+    ----------
+    results    : pd.DataFrame
+    contestants: pd.DataFrame
+
+
+    Returns
+    ----------
+    df         : pd.DataFrame of contestant attributes
+
+    """
+
+    df = pd.merge(results, contestants, on=['bo', 'cc'], how='left')
+    df = df.drop(['vbc', 'boi', 'to', 'pc', 'pcc', 'pcy', 'pcm',
+                  'pck', 'ccc', 'pre', 'ser', 'cn'], axis=1)
+    df.columns = ['position', 'candidate_id', 'votes_per_province',
+                  'total_votes', 'votes_in_pct', 'region_raw', 'province',
+                  'region', 'candidate_name', 'party_name',
+                  'contest_position', 'contest_type', 'coalition']
+    return df
+```
+
+
+Let's merge the tables, then just check the unique regions using the `unique` method.
+```{python}
+#| eval: false
+nle2019 = merge_comelec(df_results, df_contestants)
+nle2019.region.unique()
+
+array(['REGION I', 'REGION IV-B', 'BARMM', 'REGION II', 'REGION III',
+       'REGION V', 'REGION VI', 'NIR', 'REGION VII', 'REGION VIII',
+       'REGION IX', 'REGION X', 'REGION XI', 'REGION XII', 'REGION XIII',
+       'REGION IV-A', 'CAR', 'NCR'], dtype=object)
+```
+
+
+
+---
+Acknowledgements:
+
+Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/
