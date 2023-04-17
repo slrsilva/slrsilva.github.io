@@ -202,24 +202,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 Overview
 </h1>
 <p>Original submission was last 2019-05-29.</p>
-<p>This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class, as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions:</p>
-<h1>
-Acknowledgements
-</h1>
-<p>This analysis was done together with my Lab partner, Geogre Esleta.</p>
+<p>This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class, as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions: <br></p>
 <ol>
 <li>
 How did the various administrative regions of the Philippines voted for their senators?
 </li><li>
 Is the voter preference homogeneous across the country, or is there a preferred candidate or party per region? More specifically, how does (1) religious affiliation, (2) educational attainment, and (2) sex play a major role on how the voters select their candidates.
 </li></ol>
+<h1>
+Acknowledgements
+</h1>
+<p>This analysis was done together with my Lab partner, Geogre Esleta.</p>
 <h2 class="anchored">
 Load Requirement Package
 </h2>
 <p>Before anything else, let us first load all important modules for this exercise.</p>
 <div class="cell" data-execution_count="1">
 <details>
-<summary>Code</summary>
+<summary>Loading required modules</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> io</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
@@ -278,11 +278,10 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <p>The <code>get_all_province_coc</code> method is a walker that goes through each of the results directory. The walker checks if the filename has an equal value to <code>coc.json</code>. If a <code>coc.json</code>was located, the <code>get_province_coc</code> method is applied with the filepath as the parameter. The resulting dataframe is then appended to a master dataframe for further extraction and analysis. For this exercise, the group only had to extract data up to the regional and provincial levels so only three wildcard were use for the <code>glob</code> walker.</p>
 <p>Special methods (<code>get_ncr_coc</code> and <code>get_all_ncr_coc</code>) were established to get the cities’ <code>coc.json</code>. For the case of the NCR cities, theire associated <code>coc.json</code> files were one directory lower.</p>
 <h4 class="anchored">
-<code>get_province_coc</code> function
 </h4>
 <div class="cell" data-execution_count="2">
 <details>
-<summary>Code</summary>
+<summary>Function declaration for get_province_coc()</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_province_coc(filepath):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Loads a single coc file. </span></span>
@@ -313,12 +312,9 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<h4 class="anchored">
-<code>get_all_province_coc</code> function
-</h4>
 <div class="cell" data-execution_count="3">
 <details>
-<summary>Code</summary>
+<summary>Function declaration for get_all_province_coc()</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_all_province_coc(tree):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Loads all province COC files and saves them to a dataframe</span></span>
@@ -349,12 +345,9 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> total</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<h4 class="anchored">
-<code>get_ncr_coc</code> function
-</h4>
 <div class="cell" data-execution_count="4">
 <details>
-<summary>Code</summary>
+<summary>Function declaration for get_ncr_coc()</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_ncr_coc(filepath):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Loads a single coc file. </span></span>
@@ -386,12 +379,9 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<h4 class="anchored">
-<code>get_all_ncr_coc</code> function
-</h4>
 <div class="cell" data-execution_count="5">
 <details>
-<summary>Code</summary>
+<summary>Function declaration for get_all_ncr_coc()</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_all_ncr_coc(tree):</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Loads all province COC files and saves them to a dataframe</span></span>
@@ -422,7 +412,7 @@ Step 1: Extract and collect the 2019 Elections (Results) data
 <p>We can now compile all of the election results with the following line:</p>
 <div class="cell" data-execution_count="6">
 <details>
-<summary>Code</summary>
+<summary>Compiling provinces data with NCR data</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>tree <span class="op">=</span> <span class="st">'/mnt/data/public/elections/nle2019/results/*/*/*'</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ncr_tree <span class="op">=</span> <span class="st">'/mnt/data/public/elections/nle2019/results/*/*/*/*'</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>df_results <span class="op">=</span> get_all_province_coc(tree)</span>

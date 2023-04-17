@@ -19,23 +19,24 @@ jupyter: python3
 
 Original submission was last 2019-05-29.
 
-This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class, as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions:
-
-<h1>Acknowledgements</h1>
-
-This analysis was done together with my Lab partner, Geogre Esleta.
-
+This jupyter notebook was created for our Data Mining and Wrangling class in AIM MSDS. In particular, this was done during our 2nd semester of class, as one of the core requirements. In this report, we sought to understand the results of the 2019 elections through descriptive statistics. We wanted to do exploratory data analysis on the following questions: <br>
 
 <ol>
 <li>  How did the various administrative regions of the Philippines voted for their senators?
 <li>  Is the voter preference homogeneous across the country, or is there a preferred candidate or party per region? More specifically, how does (1) religious affiliation, (2) educational attainment, and (2) sex play a major role on how the voters select their candidates.
 </ol>
 
+<h1>Acknowledgements</h1>
+
+This analysis was done together with my Lab partner, Geogre Esleta.
+
+
 <h2>Load Requirement Package</h2>
 
 Before anything else, let us first load all important modules for this exercise.
 ```{python}
 # | eval: false
+#| code-summary: Loading required modules
 import os
 import io
 import re
@@ -82,9 +83,10 @@ The `get_all_province_coc` method is a walker that goes through each of the resu
 
 Special methods (`get_ncr_coc` and `get_all_ncr_coc`) were established to get the cities' `coc.json`. For the case of the NCR cities, theire associated `coc.json` files were one directory lower.
 
-<h4>`get_province_coc` function</h4>
+<h4></h4>
 ```{python}
 #| eval: false
+#| code-summary: Function declaration for get_province_coc()
 def get_province_coc(filepath):
     """
     Loads a single coc file. 
@@ -116,9 +118,9 @@ def get_province_coc(filepath):
 
 ```
 
-<h4>`get_all_province_coc` function</h4>
 ```{python}
 #| eval: false
+#| code-summary: Function declaration for get_all_province_coc()
 def get_all_province_coc(tree):
     """
     Loads all province COC files and saves them to a dataframe
@@ -149,9 +151,9 @@ def get_all_province_coc(tree):
     return total
 ```
 
-<h4>`get_ncr_coc` function</h4>
 ```{python}
-#| eval: false   
+#| eval: false
+#| code-summary: Function declaration for get_ncr_coc()
 def get_ncr_coc(filepath):
     """
     Loads a single coc file. 
@@ -183,9 +185,9 @@ def get_ncr_coc(filepath):
     return df
 ```
 
-<h4>`get_all_ncr_coc` function</h4>
 ```{python}
 #| eval: false
+#| code-summary: Function declaration for get_all_ncr_coc()
 def get_all_ncr_coc(tree):
     """
     Loads all province COC files and saves them to a dataframe
@@ -218,6 +220,7 @@ We can now compile all of the election results with the following line:
 
 ```{python}
 #| eval: false
+#| code-summary: Compiling provinces data with NCR data
 tree = '/mnt/data/public/elections/nle2019/results/*/*/*'
 ncr_tree = '/mnt/data/public/elections/nle2019/results/*/*/*/*'
 df_results = get_all_province_coc(tree)
