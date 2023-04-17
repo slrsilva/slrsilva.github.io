@@ -31,8 +31,7 @@ This jupyter notebook was created for my Data Mining and Wrangling class for my 
 
 <h1>Acknowledgements</h1>
 
-This analysis was done together with my Lab partner, George Esleta.
-
+This analysis was done together with my Lab partner, George Esleta. I would like to thank Prof Christian Alis and the ACCeSS Laboratory for the access to the high-performance computing facility.
 <h2>Methodology</h2>
 
 <h3>Pre-requisites: Load Requirement Package</h3>
