@@ -21,11 +21,19 @@ website:
   favicon: "images/profile.png"
 ---
 
-:::{#hero-heading}
+<!-- :::{#hero-heading} -->
 
-<p class='aboutme'>I have been working in the financial services and energy industries since 2013, where I have honed my skills in data mining and wrangling, revenue modeling, portfolio management, financial risk analysis, risk and compliance assessments, market study and research, and budgeting and planning.
+<p class='aboutme'>
 
-This website will be where I share my journey of mastering the art and science of data science and analytics, showcasing my past projects, and writing about the topics that I find truly fascinating. So, please stay tuned and let's explore this exciting world together!</p>
+<h2> Hello, World! </h2>
+This website will be where I share my journey of mastering the art and science of data science and analytics, showcasing my past projects, and writing about the topics that I find truly fascinating. So, please stay tuned and let's explore this exciting world together!
+
+<h2> About me </h2>
+With over 8 years of experience in the energy and financial industries as an Analytics Officer, I have a proven track record of developing portfolio optimization tools, conducting financial and risk analysis, and providing data-driven recommendations. 
+
+My expertise in Python and other data analytics tools has enabled me to streamline forecasting, increase the visibility of forecasted revenues, costs, and margins, and effectively communicate my findings to diverse stakeholders. I am seeking opportunities to apply my data science and analytical skills to enhance business analytics and data science practices.
+
+</p>
 
 
 # Education
