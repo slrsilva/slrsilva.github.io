@@ -1084,8 +1084,7 @@ sns.heatmap(corr, cmap=colormap, annot=True, vmin = -1, vmax = 1);
 ```
 ![FIGURE: Correlation Matrix between Religion and Coalition](image12-correlation.png){fig-align="left"}
 
-<h3>Conclusion</h3>
----
+<h2>Conclusion</h2>
 
 Upon checking both the Comelec 2019 Election Results and the 2015 Philippine Census data, we found out that voting preference is characterized by high regionality. 
 

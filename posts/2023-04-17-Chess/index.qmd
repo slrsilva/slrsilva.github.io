@@ -1,0 +1,1101 @@
+---
+title: "An analysis of the opening moves of the highest-ranked chess players"
+description: "Did you hear about the chess players who only used the Sicilian, Najdorf opening? It was their knight in shining armor!"
+date: 2022-04-17
+categories: [python, EDA, SQL, analysis]
+image: thumbnail.jpeg
+# include-in-header: animation.html
+format:
+  html:
+    code-fold: true 
+    css: styles.css
+jupyter: python3
+
+editor: 
+  render-on-save: true
+
+draft: true # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+
+---
+
+<!-- <h4>Looks like voting in the Philippines is all about location, location, location! Literacy and religion may not be factors, but hometown pride definitely is.</h4> -->
+![](thumbnail.jpeg)
+
+<h1>Overview</h1>
+
+Original creation and submission for this notebook was last May 29, 2019.
+
+This jupyter notebook was created for my Data Mining and Wrangling class for my Masters in Data Science program in the Asian Institute of Management. In particular, this was done during the 2nd semester for a class - Data Mining and Wrangling - as one of the core requirements. In this report, we shall explore and understand the results of the 2019 elections through descriptive statistics. We shall show some exploratory data analysis on the following questions: <br>
+
+<ol>
+<li>  How did the various administrative regions of the Philippines voted for their senators?
+<li>  Is the voter preference homogeneous across the country, or is there a preferred candidate or party per region? More specifically, how does (1) religious affiliation, (2) educational attainment, and (2) sex play a major role on how the voters select their candidates.
+</ol>
+
+<h1>Acknowledgements</h1>
+
+This analysis was done together with my Lab partner, George Esleta. I would like to thank Prof Christian Alis and the ACCeSS Laboratory for the access to the high-performance computing facility.
+<h2>Methodology</h2>
+
+<h3>Pre-requisites: Load Requirement Package</h3>
+
+Before anything else, let us first load all important modules for this exercise.
+```{python}
+# | eval: false
+#| code-summary: Loading required modules
+import os
+import io
+import re
+import time
+import glob
+import requests
+import urllib.request
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+import seaborn as sns
+```
+It is important to identify the datasets we are going to use for this exercise. The two identified datasets the group intends to use are: the 2019 National Data and the 2015-2016 Census data.
+
+With regards to 2019 National data, the team used a web scapper provided Prof. Alis. The web scapper downloaded the election results from the Commission of Elections' 2019 National and Local Elections website. The results were then stored in a local repository which is then easily accesible for the team. The 2019 elections results are broken down into two main directories: results and contest. In this exercise, the team will explore both directories to map out a comprehensive summary of the 2019 senatorial and party elections.
+
+Secondly, the 2015-2016 Census data has already been stored in a local repository for easier access. One of the main reasons why the team decided to use the 2015-2016 Census data is because of the lack of availability of recent data. The Philippine Statistics Authority only releases a comprehensive census survey ever six years. However for the purpose of this exercise, the team has agreed that the 2015-2016 census data can act as an appproximate for today's population.
+
+<h3>Step 1: Extract and collect the 2019 Elections (Results) data</h3>
+
+The first directory to explore is the 2019 Election `results`. The `results` directory contains all electoral results from a regional level down to the barangay level. For each level, a specific `coc.json` file is stored. This file contains all electoral results data and metadata for both national and local elections. However for the purposes of this analysis, we will only look at the aggregated elections data at the regional level. The files that we are interested are the coc.json files associated to each province, as these files contain the metadata and data on the election results.
+
+The main structure of each coc.json file contains the following main keys: `vbc`, `rs`, `sts`, `obs`, and `cos`. For the purpose of this exercise, the important key the group needs to extract is the `rs` key as this provides the each candidate's total votes per area. 
+Under the `rs` key, the following keys can be found: `cc`, `bo`, `v`, `tot`, `per`, and `ser`. Cross referencing these keys with official statements and comelec documentations suggests that important keys are as follows: `cc` pertaining to contest_type, `bo` pertaining to the candidate_id, and `v` pertaining to votes_per_province.
+
+| Paremeter | Description |
+|:-----|------|
+| cc   | Contestant Code |
+| bo  |  Contestant ID |
+| v    | Total Votes Per Contestant |
+| tot    |  Total Votes Per Province |
+
+However, it must be pointed out that the available data only goes as high as provincial data. If we want to process the provincial level, the team will have to aggregate the data up.
+
+The group created utility functions for easier retrieval of the provincial elections datasets. The purpose for the utility functions (and future utility functions) are for initial cleaning and manipulations. This is to ensure each dataset is ready for aggregation.
+
+The `get_province_coc` method unpacks each key and value from the `coc.json` dictionary into a cleaned up dataframe. In addition, the method identifies which region and province the file originated from by examining the filepath that was passed.
+
+The `get_all_province_coc` method is a walker that goes through each of the results directory. The walker checks if the filename has an equal value to `coc.json`. If a `coc.json `was located, the `get_province_coc` method is applied with the filepath as the parameter. The resulting dataframe is then appended to a master dataframe for further extraction and analysis. For this exercise, the group only had to extract data up to the regional and provincial levels so only three wildcard were use for the `glob` walker.
+
+Special methods (`get_ncr_coc` and `get_all_ncr_coc`) were established to get the cities' `coc.json`. For the case of the NCR cities, theire associated `coc.json` files were one directory lower.
+
+<h4></h4>
+```{python}
+#| eval: false
+#| code-summary: Function for get_province_coc()
+def get_province_coc(filepath):
+    """
+    Loads a single coc file. 
+
+    Adds additional columns `region` and `province to the DataFrame,
+    depending on filepath.
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe
+    """
+    output = []
+    with open(filepath, 'r') as f:
+        dirpath, filepath = os.path.split(filepath)
+        region = dirpath.split('/')[-2]
+        province = dirpath.split('/')[-1]
+        data = json.load(f)
+        for each in data['rs']:
+            row = [float(element) for element in list(each.values())]
+            output.append([data['vbc']] + row + [region] + [province])
+    df = pd.DataFrame(output,
+                      columns=['vbc', 'cc', 'bo', 'v', 'tot', 'per', 'ser',
+                               'region', 'province'])
+    return df
+```
+
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_all_province_coc()
+def get_all_province_coc(tree):
+    """
+    Loads all province COC files and saves them to a dataframe
+
+    Checks the filepath if filename is 'coc.json'
+
+    Created a new column to deal with the reclassification of
+        "NEGROS ORIENTAL" and "NEGROS OCCIDENTAL" to "NIR" 
+            to match the PSA 2016 dataset.
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe
+    """
+    total = pd.DataFrame()
+    for file in glob.glob(tree):
+        if os.path.basename(file) == 'coc.json':
+            df = get_province_coc(file)
+            total = total.append(df)
+    total.rename(columns={'region': 'region_raw'}, inplace=True)
+    total['region'] = total['region_raw'].copy()
+    total.loc[(total['province'] == "NEGROS ORIENTAL") |
+              (total['province'] == "NEGROS OCCIDENTAL"), 'region'] = 'NIR'
+    return total
+```
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_ncr_coc()
+def get_ncr_coc(filepath):
+    """
+    Loads a single coc file. 
+
+    Adds additional columns `region` and `province to the DataFrame,
+    depending on filepath.
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe    
+
+    """
+    output = []
+    with open(filepath, 'r') as f:
+        dirpath, filepath = os.path.split(filepath)
+        region = dirpath.split('/')[-3]
+        province = dirpath.split('/')[-2]
+        data = json.load(f)
+        for each in data['rs']:
+            row = [float(element) for element in list(each.values())]
+            output.append([data['vbc']] + row + [region] + [province])
+    df = pd.DataFrame(output,
+                      columns=['vbc', 'cc', 'bo', 'v', 'tot', 'per', 'ser',
+                               'region', 'province'])
+    return df
+```
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_all_ncr_coc()
+def get_all_ncr_coc(tree):
+    """
+    Loads all province COC files and saves them to a dataframe
+
+    Checks the filepath if filename is 'coc.json'
+
+    Parameters
+    ----------
+    filepath    : filepath
+
+    Return
+    ------
+    df          : a dataframe
+    """
+    total = pd.DataFrame()
+    for file in glob.glob(tree):
+        if file.split('/')[7] == 'NCR':
+            if os.path.basename(file) == 'coc.json':
+                df = get_ncr_coc(file)
+                total = total.append(df)
+    total.rename(columns={'region': 'region_raw'}, inplace=True)
+    total['region'] = total['region_raw'].copy()
+    return total
+```
+
+
+#### With these utility functions inplace, the team can now apply these methods for easier access to the 2019 elections data. 
+
+We can now compile all of the election results with the following line:
+
+```{python}
+#| eval: false
+#| code-summary: Compiling provinces data with NCR data
+tree = '/mnt/data/public/elections/nle2019/results/*/*/*'
+ncr_tree = '/mnt/data/public/elections/nle2019/results/*/*/*/*'
+df_results = get_all_province_coc(tree)
+df_results = df_results.append(get_all_ncr_coc(ncr_tree))
+df_results.drop_duplicates(inplace=True)
+```
+
+Let's see what we have:
+
+| vbc | cc | bo | v | tot | per | ser | region_raw | province | region |
+|:--|--|---|---|---|---|---|---|---|---|
+| 0 |	89550 |	1.0 |	1.0 |	2004.0 |	1708769.0 |	0.11 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |
+1 |	89550 |	1.0 |	2.0 |	1607.0 |	1708769.0 |	0.09 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+2 |		89550 |		1.0 |		3.0 |		8772.0 |		1708769.0 |	0.51 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+3 |		89550 |	1.0 |	4.0 |	1767.0 |	1708769.0 |	0.10 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+4 |		89550 |	1.0 |	5.0 |	5068.0 |	1708769.0 |	0.29 |	2800.0 |	REGION I |	ILOCOS NORTE |	REGION I |	
+: {tbl-colwidths="[5,10,5,5,10,10,5,10,10,30]"}
+
+### Next, let us examine the obtained dataset with actual election results. 
+
+By cross checking the results with [Comelec data](https://www.comelec.gov.ph/?r=2019NLE/ListsOfCandidates/CertifiedListofCandidates), we can identify the senators and party names.
+
+Just to check our data, we can look at an example senator from the dataset. By choosing `cc=1` and `bo=46`, we are actually highlighting Imee Marcos' senatorial candidacy results.
+
+```{python}
+#| eval: false
+#| code-summary: Code of creating a bar graph for Imee Marcos highest voting province in ascending order
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_marcos = df_results.query('cc == 1 & bo == 46').copy()
+df_marcos.groupby('region').sum()['v'].sort_values(
+    ascending=True).plot.barh(figsize=(10, 10),
+                              title='Contestant: 46 - Imee Marcos',
+                              color='#BF5209', ax=ax);
+```
+
+
+![FIGURE: Total Votes for Imee Marcos by Region](image1.png)
+
+Additionally, let us check some descriptive statistics for the 2019 Elections dataset. More specifically, let us examine the `v` or `votes` column. The group will be highly dependent on the `votes` data so let us first do some initial statistics and visualizations.
+
+```{python}
+#| eval: false
+#| code-summary: Code to groupby sum up by region and province
+df_regions = df_results.groupby(['region', 'province'])['v'].sum().to_frame()
+df_regions = df_regions.rename(columns={'v': 'votes'})
+df_regions.head(16)
+```
+
+| region | province | votes |
+|:--|--|--|
+| BARMM	| BASILAN	| 2093067.0 |
+| 	| LANAO DEL SUR| 4770462.0 |
+| 	| MAGUINDANAO	| 5917983.0 |
+| 	| SULU	| 3529555.0 |
+| 	| TAWI-TAWI	| 1874486.0 |
+| CAR	| ABRA	| 1923481.0 |
+| 	| APAYAO	| 703002.0 |
+| 	| BENGUET	| 2426397.0 |
+| 	| IFUGAO	| 1408688.0 |
+| 	| KALINGA	| 1621414.0 |
+| 	| MOUNTAIN PROVINCE	| 1074249.0 |
+| NCR	| NATIONAL CAPITAL REGION - FOURTH DISTRICT	| 22896771.0 |
+| 	| NATIONAL CAPITAL REGION - MANILA	| 13461229.0 |
+| 	| NATIONAL CAPITAL REGION - SECOND DISTRICT	| 29803007.0 |
+| 	| NATIONAL CAPITAL REGION - THIRD DISTRICT	| 18481014.0 |
+| 	| TAGUIG - PATEROS	| 10018306.0 |
+
+
+Just to explore, the code and image below shows the total votes in region 3. Notice that Bulacan has the highest number of votes, followed by Nueva Ecija, then Pampanga.
+
+```{python}
+#| eval: false
+#| code-summary: Code to plot summary for Region 3 total votes
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['REGION III',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![FIGURE: Votes Distribution in Region III](image2.png){fig-align="left"}
+
+Here we explore the vote distribution in the National Capital Region. The classification of district and cities were broken down by area (Manila, Taguig-Pateros, Second District, Third District, and Fourth District).The top number of votes came from the second district (mainly because of Quezon City), followed by the Fourth District, then the Third District.
+
+```{python}
+#| eval: false
+#| code-summary: Code to plot summary for NCR total votes
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['NCQ',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![FIGURE: Votes Distribution in the National Capital Region](image3.png){fig-align="left"}
+
+Next, we explore the distribution of votes in Region 4-A. Unsurprisingly, the population of votes is high in the population centers of Cavite, then Batangas, then Laguna.
+
+```{python}
+#| eval: false
+#| code-summary: Code to plot summary for Region 4-A total votes
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['REGION IV-A',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![FIGURE: Votes Distribution in the Region IV-A](image4.png){fig-align="left"}
+
+For now, let us also examine the distribution of election votes in region 7. Unsurprisingly, the votes are concentrated first in Cebu, followed by Bohol and Siquijor.
+
+```{python}
+#| eval: false
+#| code-summary: Code to plot summary for Region 7 total votes
+fig, ax = plt.subplots()
+ax.set_xlabel('Votes')
+df_test.loc['REGION VII',"votes"].plot.barh(color='#BF5209', ax=ax);
+```
+![FIGURE: Votes Distribution in the Region VII](image5.png){fig-align="left"}
+
+To match the contestant ID to the contestant name, the `contest` files were also downloaded from the [Commission of Elections' 2019 National and Local Elections website](https://2019electionresults.comelec.gov.ph/#/dashboard) and stored in the local repository. Similar to the `results` directory, the `contest` directory contained json files for each contest type/position. Upon inspection of a sample file within the directory, the following values were obtained:
+
+
+The pertinent keys from each json files were:
+   
+| Parameter | Description               |
+|-----------|---------------------------|
+|   cc      | Contest code              |
+|   cn      | Contest code name - location |
+|   ccc     | Contest code name         |
+|   type    | Contest type              |
+|   bos     | list of candidate parameters|
+
+Under the `bos` key, we can extract each of the candidates' parameters. The more useful ones for the group's study include:
+
+| Parameter | Description               |
+|-----------|---------------------------|
+|   boc     | Contestant ID             |
+|   bon     | Contestant Name           |
+|   pn      | Party Name                |
+
+<h3>Step 2: Extract and collect the 2019 Elections (Contestant) data</h3>
+
+The group also created utility functions for easier retrieval of the contestant datasets. This is to ensure each dataset is ready for aggregation. 
+
+Similar to the `get_province_coc`, the `get_contestant_attrib` method unpacks each key and value from the `{contest_number}.json` dictionary into a cleaned up dataframe. The method converts the `bos` directory into an additional list, which will also be appended into the resulting dataframe. 
+
+There are two (2) major political coalitions fighting for the senate seats:
+
+1. Hugpong ng Pagbabago (HNP)
+2. Otso Diretso
+
+Similar to the `get_all_province_coc`, the `get_contestants_attrib` method is a walker that goes through each of the `contest` directory. The method will first append all `{contest_numer}.json` files into a singular dataframe. Next, the method creates a new column that identifies who among the senatorial candidates are part of the **Hugpong ng Pagbabago (HNP)** or **Otso Diretso campaign**.
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_contestant_attrib()
+def get_contestant_attrib(filepath):
+    """
+    Returns the contestant json file into a dataframe
+
+    Parameters
+    ----------
+    filepath   : string
+
+    Returns
+    ----------
+    df         : pd.DataFrame of contestnat attributes
+
+    """
+
+    contestants_values = []
+    with open(filepath, 'r') as file:
+        data = json.load(file)
+        attrib_keys = [key for key in list(data.keys())
+                       if isinstance(key, (str, float, int))]
+        attrib_values = [value for value in list(data.values())
+                         if isinstance(value, (str, float, int))]
+        contest_values = [list(contest.values()) for contest in data['bos']]
+        df = pd.DataFrame(contest_values,
+                          columns=list(data['bos'][0].keys()))
+        for k, v in zip(attrib_keys, attrib_values):
+            df[k] = v
+    return df
+```
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_contestants_attrib
+def get_contestants_attrib(filepath):
+    """
+    Returns ALL contestant json files into a dataframe
+
+    Parameters
+    ----------
+    filepath   : string
+
+    Returns
+    ----------
+    df         : pd.DataFrame of contestant attributes
+
+    """
+    df = pd.DataFrame()
+    for each_filepath in glob.glob(filepath):
+        df = df.append(get_contestant_attrib(each_filepath))
+    senators = df[df.cc == 1].copy()
+    senators['bon'] = senators['bon'].str.extract(pat='(.*?) \(')
+    party = df[df.cc == 5567].copy()
+    df = senators.append(party)
+    df.drop_duplicates(inplace=True)
+    df.rename(columns={'boc': 'bo'}, inplace=True)
+    otso = ['AQUINO, BENIGNO BAM ', 'DIOKNO, CHEL', 'HILBAY, PILO',
+            'MACALINTAL, MACAROMY', 'GUTOC, SAMIRA', 'ALEJANO, GARY',
+            'ROXAS, MAR', 'TAÑADA,LORENZO ERIN TAPAT']
+    hnp = ['ANGARA, EDGARDO SONNY', 'BONG REVILLA, RAMON JR', 'CAYETANO, PIA',
+           'DELA ROSA, BATO', 'EJERCITO, ESTRADA JV', 'ESTRADA, JINGGOY',
+           'GO, BONG GO', 'MANGUDADATU, DONG', 'MANICAD, JIGGY',
+           'MARCOS, IMEE', 'PIMENTEL, KOKO', 'TOLENTINO, FRANCIS', 
+           'VILLAR, CYNTHIA']
+    for o in otso:
+        df.loc[df.bon == o, 'coalition'] = "Otso Diretso"
+    for h in hnp:
+        df.loc[df.bon == h, 'coalition'] = "HNP"
+    df['coalition'] = df['coalition'].fillna('None')
+    return df
+```
+
+Let us run the `get_contestants_attrib`. This will be used later in the blog for our further analysis.
+
+
+```{python}
+#| eval: false
+#| code-summary:  Executing get_contestants_attrib function
+contestant_filepaths = '/mnt/data/public/elections/nle2019/contests/*'
+df_contestants = get_contestants_attrib(contestant_filepaths)
+df_contestants.head()
+```
+
+<div class='table'>
+| bo | bon                 | boi    | to | pc | pn                                                 | pcc | pcy | pcm | pck | cc                 | cn | ccc     | ccn | pre      | type     | coalition    |
+|---:|:---|:---|---:|---:|:---|----:|----:|----:|----:|:--------|---:|:--------|----:|:---------|:---------|:-------------|
+| 37 | HILBAY, PILO        | 52.png | 37 |  2 | AKSYON DEMOKRATIKO                                 |   1 |   1 |   1 |   1 |   1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | Otso Diretso |
+|  7 | ALUNAN, RAFFY       | 53.png |  7 |  3 | BAGUMBAYAN VOLUNTEERS FOR A NEW PHILIPPINES         |   1 |   1 |   1 |   1 |   1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+| 14 | BALDEVARONA, BALDE  | 35.png | 14 |  7 | FILIPINO FAMILY PARTY                              |   1 |   1 |   1 |   1 |   1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+| 18 | CASIÑO, TOTI        | 20.png | 18 |  8 | KATIPUNAN NG DEMOKRATIKONG PILIPINO(KDP)            |   1 |   1 |   1 |   1 |    1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+| 21 | CHONG, GLENN        | 61.png | 21 |  8 | KATIPUNAN NG DEMOKRATIKONG PILIPINO(KDP)            |   1 |   1 |   1 |   1 |    1| SENATOR PHILIPPINES |  1 | SENATOR |   3 | national | None         |
+: {tbl-colwidths="[5,10,5,5,10,10,5,10,10,30]"}
+</div>
+
+We now have two dataframes: `df_results` containing the 2019 election results, and `df_contestants` containing the contestant information. These two dataframes can now be merged into a single dataframe. Let us also drop certain columns which we have deemed as unimportant.
+
+```{python}
+#| eval: false
+#| code-summary: Function for merge_comelec()
+def merge_comelec(results, contestants):
+    """
+    Merge results dataframe with contestants dataframe
+
+    Parameters
+    ----------
+    results    : pd.DataFrame
+    contestants: pd.DataFrame
+
+
+    Returns
+    ----------
+    df         : pd.DataFrame of contestant attributes
+
+    """
+
+    df = pd.merge(results, contestants, on=['bo', 'cc'], how='left')
+    df = df.drop(['vbc', 'boi', 'to', 'pc', 'pcc', 'pcy', 'pcm',
+                  'pck', 'ccc', 'pre', 'ser', 'cn'], axis=1)
+    df.columns = ['position', 'candidate_id', 'votes_per_province',
+                  'total_votes', 'votes_in_pct', 'region_raw', 'province',
+                  'region', 'candidate_name', 'party_name',
+                  'contest_position', 'contest_type', 'coalition']
+    return df
+```
+
+
+Let's merge the tables, then just check the unique regions using the `unique` method.
+```{python}
+#| eval: false
+#| code-summary: Merging the results and contestants dataframes
+nle2019 = merge_comelec(df_results, df_contestants)
+nle2019.region.unique()
+
+array(['REGION I', 'REGION IV-B', 'BARMM', 'REGION II', 'REGION III',
+       'REGION V', 'REGION VI', 'NIR', 'REGION VII', 'REGION VIII',
+       'REGION IX', 'REGION X', 'REGION XI', 'REGION XII', 'REGION XIII',
+       'REGION IV-A', 'CAR', 'NCR'], dtype=object)
+```
+
+
+<h3>Step 3: Load `Geopandas` for geospatial processing</h3>
+
+<h4>Loading the geospatial data </h4>
+The Philippines is composed of **seventeen (17) administrative regions**. We can use the `geopandas` module to manage and pre-process geospatial data.
+
+Let us first load up a geopandas graph of the Philippines.
+
+
+```{python}
+#| eval: false
+#| code-summary: Code to plot a map of the Philippines
+fig, ax = plt.subplots(1, figsize=(10, 15), frameon=True)
+
+ph0 = gpd.GeoDataFrame.from_file("ph_regions.shp")
+ph0.plot(ax=ax, cmap='Greens', edgecolor='#555555', k=18)
+ax.set_title('Regions of the Philippines')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['bottom'].set_visible(False)
+ax.spines['left'].set_visible(False)
+
+for ind, row in ph0.iterrows():
+    ax.text(row["geometry"].centroid.x, row["geometry"].centroid.y,
+            row["region"])
+```
+
+![FIGURE: Map of the Philippines](image6-map.png){fig-align="left"}
+
+<h4>Looking at Senatorial Results</h4>
+Let us look at the senatorial candidates. Let us total up the votes by candidate and see the top 12 winners.
+
+| Index | Candidate               | Votes       |
+|-------|------------------------|-------------|
+| 61    | VILLAR, CYNTHIA         | 23653546.0  |
+| 54    | POE, GRACE              | 20877585.0  |
+| 33    | GO, BONG GO             | 18979132.0  |
+| 18    | CAYETANO, PIA           | 18287782.0  |
+| 23    | DELA ROSA, BATO         | 17396249.0  |
+| 7     | ANGARA, EDGARDO SONNY   | 16826634.0  |
+| 39    | LAPID, LITO             | 16181906.0  |
+| 45    | MARCOS, IMEE            | 14735294.0  |
+| 59    | TOLENTINO, FRANCIS      | 14264142.0  |
+| 15    | BONG REVILLA, RAMON JR  | 13899831.0  |
+| 14    | BINAY, NANCY            | 13864931.0  |
+| 53    | PIMENTEL, KOKO          | 13529531.0  |
+
+
+Let's visualize this with a plot:
+```{python}
+#| eval: false
+#| code-summary: Code to plot top senators by vote
+fig, ax = plt.subplots(figsize=(15,8))
+plt.rcParams.update({'font.size': 14})
+df_senator.set_index('Candidate').head(12).sort_values(
+    by='Votes', ascending=True).plot.barh(ax=ax,
+    title='Top 12 Candidates, in Millions', color='#BF5209', legend=False);
+ax.set_xlabel('Total Votes');im
+```
+![FIGURE:Top 12 senators by vote](image7-top12.png){fig-align="left"}
+
+<h4>Top Senator Per Region</h4>
+
+We want to find out won across all the regions. If there is any bias for cetain candidates.
+Based on our findings, we can see that candidate Cynthia Villar won majority of the regions. 
+
+It is interesting to note that the top ranking senator for Ilocos Region (Region I) and the Cordillera Administrative Region (CAR) is **Imee Marcos**, which hails from that region. This confirms that there is a "Solid North", and that support for the Marcoses still exists in that area.
+
+For the Mindanao regions, the top candidate is **Bong Go**, former special assistant to President Duterte, who is from Mindanao.
+
+These show that Philippine politics is **very regional in nature**. Voters will naturally support their hometown candidate, regardless of the issues surrounding that candidate. 
+
+```{python}
+#| eval: false
+#| code-summary: Code to get top senator by region and the associated number of votes
+df_senator_region = df_senators.groupby(
+    ['region', 'candidate_name']).agg({'votes_per_province': sum})
+df_senator_region['rank'] = df_senator_region.groupby(
+    'region')['votes_per_province'].rank('dense', ascending=False)
+df_senator_region = df_senator_region[df_senator_region['rank'] == 1].reset_index()
+df_senator_region.columns = ['Region', 'Candidate Name', 'Votes', 'Rank']
+df_senator_region
+```
+
+|    | Region   | Candidate Name   |      Votes |   Rank |
+|---:|:---------|:----------------|-----------:|-------:|
+|  0 | BARMM    | GO, BONG GO      |   768037   |    1   |
+|  1 | CAR      | MARCOS, IMEE     |   348303   |    1   |
+|  2 | NCR      | VILLAR, CYNTHIA  |  3345089   |    1   |
+|  3 | NIR      | VILLAR, CYNTHIA  |   856992   |    1   |
+|  4 | REGION I | MARCOS, IMEE     |  1661318   |    1   |
+|  5 | REGION II| VILLAR, CYNTHIA  |   915393   |    1   |
+|  6 | REGION III| VILLAR, CYNTHIA |  3056167   |    1   |
+|  7 | REGION IV-A| VILLAR, CYNTHIA |  3660112   |    1   |
+|  8 | REGION IV-B| VILLAR, CYNTHIA |   688494   |    1   |
+|  9 | REGION IX| GO, BONG GO      |   663927   |    1   |
+| 10 | REGION V | POE, GRACE       |  1417114   |    1   |
+| 11 | REGION VI| VILLAR, CYNTHIA  |  1064681   |    1   |
+| 12 | REGION VII| VILLAR, CYNTHIA |  1307605   |    1   |
+| 13 | REGION VIII| VILLAR, CYNTHIA|  1132757   |    1   |
+| 14 | REGION X | GO, BONG GO      |   949392   |    1   |
+| 15 | REGION XI| GO, BONG GO      |  1002771   |    1   |
+| 16 | REGION XII| VILLAR, CYNTHIA |   983354   |    1   |
+| 17 | REGION XIII| GO, BONG GO    |   777931   |    1   |
+
+```{python}
+#| eval: false
+#| code-summary: Code to get top senator by region and the associated number of votes
+(df_senator_region[df_senator_region['Rank'] == 1].reset_index().groupby(
+    'Candidate Name')['Rank'].sum().to_frame().sort_values(by='Rank')
+ .reset_index())
+```
+
+| Candidate Name | Count  |
+|----------------|-------|
+| POE, GRACE     | 1.0   |
+| MARCOS, IMEE   | 2.0   |
+| GO, BONG GO    | 5.0   |
+| VILLAR, CYNTHIA| 10.0  |
+
+```{python}
+#| eval: false
+ fig, ax = plt.subplots()
+(df_senator_region[df_senator_region['Rank'] == 1].reset_index().groupby(
+    'Candidate Name')['Rank'].sum().to_frame().sort_values(by='Rank').plot
+ .barh(color='#BF5209', ax=ax));
+ax.set_xlabel('Rank');
+```
+![FIGURE: Instances of candidate ranking 1 per province](image8-rank.png){fig-align="left"}
+
+As we can see, Cynthia Villar was ranked 1st 10 times, followed by Bong Go at 5 times, Imee Marcos at 2 times, and Grace Poe 1 time.
+
+<h3>Step 4: Finding the Dominant Party Per Region</h3>
+There are three main political parties vying for the senatorial seats:
+
+<ol>
+<li> Liberal Party
+<li> Nacionalista Party
+<li> Partito Demokratiko Pilipino Lakas ng Bayan (PDP-Laban)
+</ol>
+
+We looked at the <font color="BF5209">dominant or majority political party</font> per administrative region, and identify if any regions have any affiliations to a certain party.
+
+```{python}
+#| eval: false
+#| code-summary: Code to retrieve top Party Per Region
+
+df_party = df_senators.groupby(['region_raw', 'party_name']).agg({
+    'votes_per_province': sum})
+df_party['rank'] = df_party.groupby(
+    'region_raw')['votes_per_province'].rank('dense', ascending=False)
+df_party.reset_index(inplace=True)
+df_leading_party = df_party[df_party['rank'] == 1].copy()
+df_leading_party.columns = ['Region', 'Party', 'Votes', 'Rank']
+df_leading_party.sort_values(['Region', 'Rank'], inplace=True)
+df_leading_party.drop(['Rank', 'index'], inplace=True)
+```
+
+
+This is the resulting table:
+
+| Region      | Party                                          | Votes      |
+| ----------- | ---------------------------------------------- | ---------- |
+| BARMM       | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 2596572.0  |
+| CAR         | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 1028536.0  |
+| NCR         | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 10400476.0 |
+| REGION I    | NACIONALISTA PARTY                             | 4361859.0  |
+| REGION II   | NACIONALISTA PARTY                             | 2474544.0  |
+| REGION III  | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 7804389.0  |
+| REGION IV-A | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 9542856.0  |
+| REGION IV-B | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 1733733.0  |
+| REGION IX   | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 2571518.0  |
+| REGION V    | LIBERAL PARTY                                  | 4885924.0  |
+| REGION VI   | LIBERAL PARTY                                  | 4335427.0  |
+| REGION VII  | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 5480074.0  |
+| REGION VIII| PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 3442654.0  |
+| REGION X    | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 3697535.0  |
+| REGION XI   | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 3654361.0  |
+| REGION XII  | PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 3861166.0  |
+| REGION XIII| PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN     | 2858376.0  |
+
+Next, let us generate the code to create a map with majority winners.
+```{python}
+#| eval: false
+#| code-summary: Code to create a map of majority winners
+
+merged = ph0.merge(df_leading_party, left_on='region', right_on='Region')
+colors = 18
+color_map = {'PARTIDO DEMOKRATIKO PILIPINO LAKAS NG BAYAN': 'red', 
+             'LIBERAL PARTY': 'yellow',
+             'NACIONALISTA PARTY': 'green'}
+
+fig, ax = plt.subplots(1, 1, figsize = (10,12));
+ax.set_title('Dominant political party per region', fontsize=20);
+
+for party in list(merged['Party'].unique()):
+    color_map[party]
+    merged[merged['Party'] == party].plot(ax=ax, color = color_map[party], 
+                                          categorical = True, 
+                                          figsize=(10,12), legend=True)
+
+merged.geometry.boundary.plot(color=None,edgecolor='k',linewidth = .5,ax=ax);
+plt.rcParams.update({'font.size': 18})
+```
+
+![FIGURE: Top Party by Region](image9-mapmajority.png){fig-align="left"}
+
+
+We can clearly see a voting bias of each region.
+
+Majority of Region 1 and Region 2 has a voting preference towards the <bold>Nacionalista Party</bold>. This can be attributed to the fact that Imee Marcos, who hails from Ilocos Norte, is a Nacionalista.
+
+Majority of Region 5 and Region 6 has a voting preference towards the <bold>LIberal Party</bold>. This is also expected since Leni Robredo, incumbent Vice President who is from the Liberal Party, is a Bicolano. 
+
+The remainder of the Philippines has a voting preference towards the <bold>PDP-LABAN</bold>.
+
+<h3>Step 5: Finding the Dominant Coalition Per Region</h3>
+Aside from individual candidates and parties, we also looked at the **dominant coalition per region** by counting the number of senate seats obtained by each coalition. The results indicate that HNP gained a majority of the seats across all regions, especially in Mindanao. 
+
+The only regions where HNP did not gain a solid majority are in Bicol Region (Region V) and Eastern Visayas (Region VI), known bailwicks of the Liberal Party. Below we created a function to get the number of seats won per coalition per region, and the associated map. The more seats won, the darker the color.
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_coalition_sets()
+
+def get_coalition_seats():
+    """
+    Returns a dataframe of the number of seats won per coalition per region
+
+    Returns
+    -------
+    coalition : pd.DataFrame
+
+    """
+    coalition_seats = nle2019.query('position == 1')
+
+    coalition_seats = coalition_seats.groupby(
+        ['region', 'candidate_name', 'coalition'],
+        as_index=False).agg({'votes_per_province': sum})
+    coalition_seats = coalition_seats.sort_values(
+        by=['region', 'votes_per_province'], ascending=[1, 0])
+    coalition_seats.set_index('region', inplace=True)
+
+    coalition_seats['rank'] = list(range(1, len(
+        coalition_seats.candidate_name.unique())+1))\
+        * len(coalition_seats.index.unique())
+    coalition_seats['is_top_12'] = 1*(coalition_seats['rank'] <= 12)
+    coalition_seats = coalition_seats.reset_index()
+    coalition_seats = pd.pivot_table(
+        coalition_seats, index='region', columns='coalition',
+        values='is_top_12', aggfunc=np.sum)
+    coalition_seats['coalition_seats_total'] = coalition_seats.sum(axis=1)
+
+    for coalition in coalition_seats.columns[:-1]:
+        coalition_seats['party_seats_pct_' + coalition] = \
+            coalition_seats[coalition] / \
+            coalition_seats['coalition_seats_total']
+        coalition_seats.rename(
+            columns={coalition: 'coalition_seats_count_' + coalition},
+            inplace=True)
+
+    coalition_seats = coalition_seats.round(5)
+    coalition_seats = coalition_seats.reset_index()
+    return coalition_seats
+```
+
+```{python}
+#| eval: false
+#| code-summary: Code to merge coalition dataframe and coalition_seat_counts, code to display heat map.
+
+coalition = get_coalition_seats()
+merged = ph0.merge(coalition[[
+                   'region', 'coalition_seats_count_HNP']], left_on='region',
+                   right_on='region')
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 15))
+merged.plot('coalition_seats_count_HNP', ax=ax, cmap='YlOrRd', legend=True)
+ax.set_title('Number of HNP senate seats won', fontsize=24)
+merged.geometry.boundary.plot(color=None, edgecolor='k', linewidth=1, ax=ax)
+```
+
+![FIGURE: Number of HNP Senate Seats Won](image10-hnp.png){fig-align="left"}
+
+<h3>Step 6: Is Demographics Related To Voting Preferences?</h3>
+
+Is the voting preference of a region related to its demographics such as literacy rate and religious affiliation? To answer this, we obtained the `2015 Census Data`. The directory is a collection of excel files, where each excel file corresponds to a certain region and province. If we explore each file, we can see that each sheet corresponds to a different demographic feature table. For this analysis, we are intrested at sheets `T8` and `T11`.
+
+The `get_census_religion` loads the imporant columns and rows from sheet `T8`. It also adds an additional column based on the region. Similarly, the `get_census_education` loads the imporant columns and rows from sheet `T11`. It also aggregates each individual years experience column into a singular cumulative column.
+
+Finally, the `read_census_files` aggregates the 2016 regional data into singular dataframe by using `get_census_religion` and `get_census_education` functions. To extract only the regional files, the `read_census_files` uses regex to get filenames with only underscores in the beginning (this is an indicator of regional data).
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_censis_religion()
+def get_census_religion(path):
+    """
+    Returns a consolidated DataFrame of census data by religion
+
+    Parameters
+    ----------
+    path      : string, filepath to census directory
+
+
+    Returns
+    ----------
+    df        : pd.DataFrame
+
+    """
+    filename = os.path.basename(path)
+    df = pd.read_excel(path, sheet_name='T8', header=None,
+                       usecols=[0, 1, 2, 3],
+                       skiprows=6, skip_blank_lines=True,
+                       skipfooter=3,
+                       names=['religion', 'total', 'm', 'f'])
+    df.sort_values('total', ascending=False, inplace=True)
+    df['region'] = re.search(r'\_(.*?)\_', os.path.basename(path)).group(1)
+    cols = ['region', 'religion', 'm', 'f', 'total']
+    df = df[cols]
+    return df
+```
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_census_education()
+def get_census_education(path):
+    """
+    Returns a consolidated DataFrame of census data by education
+
+    Parameters
+    ----------
+    path      : string, filepath to census directory
+
+
+    Returns
+    ----------
+    df        : pd.DataFrame
+
+    """
+    filename = os.path.basename(path)
+    df = pd.read_excel(path, sheet_name='T11',
+                       usecols=[0, 15, 16, 17, 18, 19, 20],
+                       skiprows=3,
+                       skip_blank_lines=True, nrows=20,
+                       names=['education', '18', '19',
+                              '20_24', '25_29', '30_34', '35_above'])
+    df.dropna(how='any', inplace=True)
+    df.reset_index(inplace=True, drop=True)
+    df.drop(df.index[[0, 5, 6, 7, 9, 10, 12, 13]], inplace=True)
+    df['total'] = (df['18'] + df['19'] + df['20_24'] + df['25_29'] +
+                   df['30_34'] + df['35_above'])
+    df['region'] = re.search(r'\_(.*?)\_', os.path.basename(path)).group(1)
+    cols = ['region', 'education', '18', '19', '20_24', '25_29', '30_34',
+            '35_above', 'total']
+    df = df[cols]
+    return df
+```
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_census_files()
+def read_census_files(path):
+    '''
+    Reads all census regional files
+
+    Parameter
+    ---------
+    path      : string, filepath to census directory
+
+    Returns
+    -------
+    Dictionary of dataframes
+    '''
+    total = {'religion': pd.DataFrame(),
+             'education': pd.DataFrame()}
+
+    for filepath in glob.glob(path + ".xls", recursive=True):
+        if re.match('_(?!PHILIPPINES)', os.path.basename(filepath)):
+            total['religion'] = (total['religion']
+                                 .append(get_census_religion(filepath)))
+            total['education'] = (total['education']
+                                  .append(get_census_education(filepath)))
+    total['religion'].reset_index(inplace=True, drop=True)
+    total['education'].reset_index(inplace=True, drop=True)
+
+    for df in total.values():
+        df.loc[(df['region'] == "ARMM"), 'region'] = 'BARMM'
+        df.loc[(df['region'] == "MIMAROPA"), 'region'] = 'REGION IV-B'
+        df.loc[(df['region'] == "CARAGA"), 'region'] = 'REGION XIII'
+    return total
+```
+
+```{python}
+#| eval: false
+#| code-summary: Code to execute get_census_education amd get_census_religion
+census_path = '/mnt/data/public/census/*'
+census_dict = read_census_files(census_path)
+```
+
+<h3>Step 6.1: Is literacy rate related to voting preference? </h3>
+
+We looked at the number of seats obtained by each coalition per region, then correlated it to literacy rate. Education information was obtained from the 2015 Census data.
+
+We looked at the literacy rate $\frac{n_{educated}}{n_{total}}$ of each administrative region:
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_education_percent()
+def get_education_percent():
+    '''
+    Gets percentage of educational level per region
+    '''
+    education = census_dict['education'].groupby(
+        ['region', 'education'], as_index=False).sum()
+    education = pd.pivot_table(
+        education, index='region', columns='education', values='total')
+    education.columns = ['education_pct_' + educ for educ in education.columns]
+    education['education_total'] = education.sum(axis=1)
+    for educ in education.columns[:-1]:
+        education[educ] /= education['education_total']
+    education.drop('education_total', axis=1, inplace=True)
+    education = education.round(5)
+
+    return education
+```
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_agg_education_percent()
+def get_agg_education_percent():
+    '''
+    Gets aggregated percentage of educational level per region
+    '''
+    df_educ = get_education_percent()
+    df_educ = df_educ.reset_index()
+    df_educ['educated'] = (1 - df_educ['education_pct_No Grade Completed']
+                           - df_educ['education_pct_Not Stated'])
+    df_educ['not_educated'] = df_educ['education_pct_No Grade Completed']
+    df_educ['unknown'] = df_educ['education_pct_Not Stated']
+    df_educ.drop(columns=['education_pct_Academic Degree Holder',
+                          'education_pct_College Undergraduate',
+                          'education_pct_Elementary',
+                          'education_pct_High School',
+                          'education_pct_No Grade Completed',
+                          'education_pct_Not Stated',
+                          'education_pct_Post Baccalaureate',
+                          'education_pct_Post-Secondary',
+                          'education_pct_Pre-School',
+                          'education_pct_Special Education'], inplace=True)
+    df_educ.set_index('region', inplace=True)
+    df_educ.reset_index(inplace=True)
+    return df_educ
+```
+
+```{python}
+#| eval: false
+#| code-summary: Code to run get_agg_education_percent()
+df_educ = get_agg_education_percent()
+df_educ
+```
+The output table shows the literacy table per region. The main columns shows the percentage that are `educated`, `not_educated` and `unknown`.
+
+| region     | educated | not_educated | unknown  |
+|------------|----------|--------------|----------|
+| BARMM      | 0.85355  | 0.14105      | 0.00540  |
+| CAR        | 0.97376  | 0.02622      | 0.00002  |
+| NCR        | 0.99234  | 0.00221      | 0.00545  |
+| NIR        | 0.98085  | 0.01882      | 0.00033  |
+| REGION I   | 0.99321  | 0.00679      | 0.00000  |
+| REGION II  | 0.98610  | 0.01389      | 0.00001  |
+| REGION III | 0.99355  | 0.00615      | 0.00030  |
+| REGION IV-A| 0.99473  | 0.00519      | 0.00008  |
+| REGION IV-B| 0.96573  | 0.03417      | 0.00010  |
+| REGION IX | 0.96456  | 0.03486      | 0.00058  |
+| REGION V   | 0.99126  | 0.00851      | 0.00023  |
+| REGION VI  | 0.98721  | 0.01257      | 0.00022  |
+| REGION VII | 0.98753  | 0.01209      | 0.00038  |
+| REGION VIII| 0.97679  | 0.02297      | 0.00024  |
+| REGION X   | 0.98095  | 0.01856      | 0.00049  |
+| REGION XI  | 0.97818  | 0.02050      | 0.00132  |
+| REGION XII | 0.94792  | 0.05034      | 0.00174  |
+| REGION XIII| 0.98487  | 0.01503      | 0.00010  |
+
+We then checked if the number of seats obtained by each coalition is correlated to the literacy rate of that region. First, we obtained the number of seats obtained by each coalition per region:
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_coalition_rank()
+def get_coalition_rank():
+    """
+    Get number of seats obtained by each coalition
+    """
+    coalition_seats = nle2019.query('position == 1')
+    coalition_seats = coalition_seats.groupby(
+        ['region', 'candidate_name', 'coalition'], as_index=False).agg({'votes_per_province': sum})
+    coalition_seats = coalition_seats.sort_values(
+        by=['region', 'votes_per_province'], ascending=[1, 0])
+    coalition_seats.set_index('region', inplace=True)
+
+    coalition_seats['rank'] = list(range(1, len(
+        coalition_seats.candidate_name.unique())+1)) * len(coalition_seats.index.unique())
+    coalition_seats['is_top_12'] = 1*(coalition_seats['rank'] <= 12)
+    coalition_seats.reset_index(inplace=True)
+
+    coalition_seats = pd.pivot_table(
+        coalition_seats, index='region', columns='coalition', values='is_top_12', aggfunc=np.sum)
+    return coalition_seats
+```
+
+We then merge this with the education dataframe, then get the correlation by using python's `corr` method:
+
+```{python}
+#| eval: false
+#| code-summary: Code to run get_agg_education_percent() and create a a correlation graph.
+df_coal_educ = get_agg_education_percent().set_index('region').join(get_coalition_rank())
+df_coal_educ['Educated'] = df_coal_educ['educated']
+df_coal_educ['Not Educated'] = df_coal_educ['not_educated']
+corr = df_coal_educ.corr().loc[['Otso Diretso', 'HNP'],['Educated', 'Not Educated']]
+colormap = sns.diverging_palette(100, 100, n = 10)
+sns.heatmap(corr, cmap=colormap, annot=True, vmin = -1, vmax = 1);
+```
+
+![FIGURE: Correlation Matrix between Education and Coalition](image11-correlation.png){fig-align="left"}
+
+The Census and election data show that the voting preference of a region has no correlation with its literacy rate. We now look at religion to see if it has a correlation with the voting preference.
+
+<h3>Step 6.2: Is literacy rate related to voting preference? </h3>
+We also looked into the religious affiliation per region, and checked if it is correlatd with voting preference.
+
+First, we obtained the distribution of religions per region from the Census data:
+
+```{python}
+#| eval: false
+#| code-summary: Function for get_religion_percent()
+def get_religion_percent():
+    """
+    Get percentages of religion per region
+    """
+    religion = census_dict['religion'].groupby(
+        ['region', 'religion'], as_index=False).sum()
+    religion = pd.pivot_table(
+        religion, index='region', columns='religion', values='total')
+    religion.columns = ['religion_pct_' + rel for rel in religion.columns]
+    religion['religion_total'] = religion.sum(axis=1)
+    for rel in religion.columns[:-1]:
+        religion[rel] /= religion['religion_total']
+    religion.drop('religion_total', axis=1, inplace=True)
+    religion = religion.round(5)
+    return religion
+
+
+df_rel = get_religion_percent()
+```
+We then merged the religion census data with the coalition ranking data to check if religion has correlation with the number of seats obtained by each coalition:
+
+```{python}
+#| eval: false
+#| code-summary: Joining the coalition rank dataframe with the output from the get_religion_percent() function.
+df_coal_rel = get_religion_percent().join(get_coalition_rank())
+```
+
+From getting the correlation of the religion data with the number of seats per coalition, it is apparent that the Voting preference of a region has **no correlation with its religious affiliation**.
+
+```{python}
+#| eval: false
+#| code-summary: Code to get a correlation graph between Religion and Top Coalition Party.
+df_coal_rel['Roman Catholic'] = df_coal_rel['religion_pct_Roman Catholic, including Catholic Charismatic']
+df_coal_rel['Islam'] = df_coal_rel['religion_pct_Islam']
+df_coal_rel['Iglesia ni Cristo'] = df_coal_rel['religion_pct_Iglesia ni Cristo']
+corr = df_coal_rel.corr().loc[
+    ['Roman Catholic','Islam','Iglesia ni Cristo'],['HNP','Otso Diretso']]
+colormap = sns.diverging_palette(100, 100, n = 10)
+sns.heatmap(corr, cmap=colormap, annot=True, vmin = -1, vmax = 1);
+```
+![FIGURE: Correlation Matrix between Religion and Coalition](image12-correlation.png){fig-align="left"}
+
+<h2>Conclusion</h2>
+
+Upon checking both the Comelec 2019 Election Results and the 2015 Philippine Census data, we found out that voting preference is characterized by high regionality. 
+
+
+Candidates have a homecourt advantage, and voters tend to vote candidates or parties affiliated with their home region.
+
+
+Also, literacy rate and religious affiliation is not correlated to voting preference.
+
+---
+<i class='appendix'>Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/</i>
