@@ -21,17 +21,19 @@ website:
   favicon: "images/profile.png"
 ---
 
-<!-- :::{#hero-heading} -->
+:::{#hero-heading}
 
 <p class='aboutme'>
 
 <h2> Hello, World! </h2>
 This website will be where I share my journey of mastering the art and science of data science and analytics, showcasing my past projects, and writing about the topics that I find truly fascinating. So, please stay tuned and let's explore this exciting world together!
 
-<h2> About me </h2>
-With over 8 years of experience in the energy and financial industries as an Analytics Officer, I have a proven track record of developing portfolio optimization tools, conducting financial and risk analysis, and providing data-driven recommendations. 
+<h2> About Me </h2>
+With over 8 years of experience in the energy and financial industries as an Analytics Officer, I have a proven track record of developing portfolio optimization tools, conducting financial and risk analysis, and providing data-driven recommendations. Through my proficiency in Python and other data analytics tools, I have streamlined data collection, mining, and wrangling, developed data-informed suggestions and reports, and successfully communicated my insights to a range of stakeholders. 
 
-My expertise in Python and other data analytics tools has enabled me to streamline forecasting, increase the visibility of forecasted revenues, costs, and margins, and effectively communicate my findings to diverse stakeholders. I am seeking opportunities to apply my data science and analytical skills to enhance business analytics and data science practices.
+
+My career has been focused on solving complex multidisciplinary problems, and I have developed a strong interest in data science as a tool to solve real-world business and policy problems. I am actively pursuing opportunities to utilize and enhance my data science and analytical skills, with a focus on improving business analytics and data science practices.
+
 
 </p>
 
@@ -60,15 +62,6 @@ My expertise in Python and other data analytics tools has enabled me to streamli
 
 <strong> Innovations Programs Manager </strong><br>
 <p class='company'>Aboitiz Power Corporation</p>
-
-<strong> Private Consulting Data Scientist </strong><br>
-<p class='company'>Epimetrics, Inc. with National Resilience Council and Coastal Cities at Risk</p>
-
-<strong> Private Consulting Data Scientist </strong><br>
-<p class='company'>Epimetrics, Inc. with Philippine Council for Health Research and Development</p>
-
-<strong> Private Consultant for Mathematical Modelling </strong><br>
-<p class='company'>Philippine Institute for Development Studies (PIDS)</p>
 
 <strong> Margin Optimization Specialist </strong><br>
 <p class='company'>Aboitiz Power Corporation</p>
