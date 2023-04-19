@@ -25,6 +25,8 @@ format:
   html:
     theme: journal
     css: styles.css
+    include-in-header: html/google.html
+    include-before-body: html/google.html
 
 
 
