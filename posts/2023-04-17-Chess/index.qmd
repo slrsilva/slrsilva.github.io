@@ -32,7 +32,7 @@ This jupyter notebook was created for my Data Mining and Wrangling class for my 
 
 This analysis was done together with my Lab partner, George Esleta. I would like to thank Prof Christian Alis and the ACCeSS Laboratory for the access to the high-performance computing facility.
 
-<h2> A. Introcution and the Problem Statement </h2>
+<h2> A. Introduction and the Problem Statement </h2>
 
 Chess is a two player strategy game played on a checked 8 by 8 board. The 8 by 8 grid consists of 64 squares where each player is located at opposite ends of the checked board. At the beginning of the game, each player assigned a color of either Black or White. The color scheme indicates which player will move first, with the player with the white pieces moving first. Moves are alternating between players, with each player allowed to only move one chess piece each round.
 

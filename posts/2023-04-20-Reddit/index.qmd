@@ -1,6 +1,6 @@
 ---
-title: "An analysis of the opening moves of the highest-ranked chess players"
-description: "The Sicilian Defence is the best offense"
+title: "Unraveling Subreddits"
+description: "Identifying underlying themes in Reddit titles using non-supervised clustering "
 date: 2022-04-20
 categories: [python, EDA, SQL, analysis]
 image: thumbnail.jpeg
@@ -18,21 +18,21 @@ draft: true # setting this to `true` will prevent your post from appearing on yo
 
 ---
 
-<!-- <h4>Looks like voting in the Philippines is all about location, location, location! Literacy and religion may not be factors, but hometown pride definitely is.</h4> -->
 ![](thumbnail.jpeg)
 
 <h1>Executive Summary</h1>
 <div class='executive-summary'>
-Original creation and submission for this notebook was last May 29, 2019.
 
-This jupyter notebook was created for my Data Mining and Wrangling class for my Masters in Data Science program in the Asian Institute of Management. In particular, this was done during the 2nd semester for a class - Data Mining and Wrangling - as one of the core requirements. In this report, we shall do an analysis on opening chess moves through exploratory data analysis. In this exercise, we extracted the data from [ChessGames.com](ChessGames.com) using the modules `Beautifulsoup`, `requests`, and `re` Python modules, then stored the data in an sqlite database. Results show that the Sicilian, Najdorf (`ECO = B90`) opening was used in nearly 2.6% of the total games won by the top players. However, looking at the individual players, there is no predominant opening move, with only 7 of the 30 players having the Sicilian, Najdorf move as their top winning opening move.
+Original creation and submission for this notebook was last June 2019.
+
+Reddit (https://www.reddit.com/) is an American discussion and aggregation website for user-generated content with more than 500 million monthly visitors. We uncovered the underlying categories or "subreddits" by performing representative-based clustering on a sample of Reddit titles. Results reveal that Reddit is a very American-centric platform and that the two main themes are (a) U.S. politics, and (b) seeking help from other Redditors on a wide range of topics including technology, food, and legal matters. For a small number of clusters ($n=10$), the high-level categories that emerged include the 2016 U.S. Presidential Elections (Donald Trump, Hillary Clinton, and Bernie Sanders), food, legal concerns, and "New year"-related subreddits. Increasing the number of clusters to $n=16$ revealed more specific subreddits such as technical support, recipes, apartment/rental concerns, and reaction compilations.
 </div>
 
 <h2>Acknowledgements</h2>
 
-This analysis was done together with my Lab partner, George Esleta. I would like to thank Prof Christian Alis and the ACCeSS Laboratory for the access to the high-performance computing facility.
+This analysis was done together with my Lab partner, George Esleta, and Cohortmates - Gilbert Chua, Nigel Silva and Oonre Advincula-Go. 
 
-<h2> A. Introcution and the Problem Statement </h2>
+<h2> A. Introduction and the Problem Statement </h2>
 
 Chess is a two player strategy game played on a checked 8 by 8 board. The 8 by 8 grid consists of 64 squares where each player is located at opposite ends of the checked board. At the beginning of the game, each player assigned a color of either Black or White. The color scheme indicates which player will move first, with the player with the white pieces moving first. Moves are alternating between players, with each player allowed to only move one chess piece each round.
 
@@ -533,16 +533,19 @@ Top Winning Moves Per Top Player
 
 <h2>Conclusions and Recommendations</h2>
 
-The results indicate that the Sicilian, Najdorf is the most used opening move by the thirty top-ranked players, with 356 games or nearly 2.6% of the games were won using this move. However, looking at the individual opening moves of each top-ranked players, there is no predominant opening move, with only 7 of the 30 players have the Sicilian, Najdorf move as their top winning opening move. Additionally, looking at the top five players, the Ruy Lopez, Berlin Defense was the most frequent opening move.
-        
-The methodology of the study does not take into account the total number of games each player competed in. Certain top ranked players have higher number of competition appearances. This may affect the number of instances the Sicilian, Najdorf may appear due to playing style bias. Further research may be conducted to explore normalizing the data by the number of games each top-player appeared in and won. Also, we can explore why the top-ranked players have a preference towards the Ruy Lopez, Berlin Defense.
+The clustering results show that **Reddit is a very American-centric platform**. Majority of the topics are related to the 2016 U.S. Presidential Election, specifically on the Republican nominee Donald Trump, Democrat candidates Hillary Clinton, and the Iowa caucuses. 
+
+Also, the results show that the two primary motivations of users to post in Reddit is (a) to discuss politics, and (b) to seek advise/ask help from other Redditors, whether technological, legal, or culinary in nature.
+
+Increasing the number of clusters also reveal more specific topics such as 'technical support' and ''Vines reaction compilation videos'.
+
+For future studies, it is suggested to perform hierarchical clustering.
 
 <h2>References</h2>
 <i>
 <ul>
-<li> [ChessGames.com](ChessGames.com)
-<li> [Chess Strategy for Chess Openings and Chess Principles](https://www.chesscentral.com/pages/learn-chess-play-better/chess-strategy-for-chess-openings-and-chess-principles.html)
-<li> [Chess Tournament Rules Regulations Fide Approved]( https://www.chessbazaar.com/blog/chess-tournament-rules-regulations-fide-approved/)
-<li> [Ten Rules Openings](https://exeterchessclub.org.uk/content/ten-rules-opening)
+<li> [All the news](https://towardsdatascience.com/all-the-news-17fa34b52b9d)
+<li> [Clustering text documents using k-means](https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py)
+<li> [Latent Semantic Analysis](http://www.scholarpedia.org/article/Latent_semantic_analysis)
 </ul>
 </i>
