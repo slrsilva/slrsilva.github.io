@@ -1,7 +1,7 @@
 ---
 title: "An analysis of the opening moves of the highest-ranked chess players"
-description: "Did you hear about the chess players who only used the Sicilian, Najdorf opening? It was their knight in shining armor! to victory"
-date: 2022-04-17
+description: "The Sicilian Defence is the best offense"
+date: 2022-04-20
 categories: [python, EDA, SQL, analysis]
 image: thumbnail.jpeg
 # include-in-header: animation.html
@@ -14,7 +14,7 @@ jupyter: python3
 editor: 
   render-on-save: true
 
-draft: true # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
 
 ---
 
@@ -227,7 +227,6 @@ df_players.columns = ['Player ID', 'Name', 'Rating', 'Number of Games']
 df_players.head(30)
 ```
 
-<center> Table 2: Top 30 chess players based on Rating </center>
 |    Player ID |                     Name | Rating | Number of Games |
 |-------------:|----------------|-------:|----------------:|
 |        52948 |           Magnus CARLSEN |   2882 |           3,016 |
@@ -260,10 +259,10 @@ df_players.head(30)
 |        15874 |               Gata KAMSKY |   2763 |           1,889 |
 |        12290 |                Peter LEKO |   2763 |           2,364 |
 |       112240 |                Yu YANGYI |   2762 |             991 |
+: Table 2: Top 30 chess players based on Rating
 
 The `games` table was then populated by web scraping <small>`http://www.chessgames.com/perl/chessplayer?pid=<pid>`</small> and iterating over the top 30 player IDs. The following fields were extracted for each game:
 
-<center> Table 3: `games` table fields </center>
 
 | Field         | Description        | Data Type |
 |---------------|--------------------|-----------|
@@ -276,6 +275,7 @@ The `games` table was then populated by web scraping <small>`http://www.chessgam
 | tournament    | Tournament Name    | varchar   |
 | eco           | Encyclopaedia of Chess Openings  | varchar   |
 | opening_move  | Opening move       | varchar   |
+: Table 3: `games` table fields 
 
 The `get_players_games` function was implemented to scrape the game data for a given Player ID `pid` and page number `page_start`. This writes the games data of the player to a CSV file (`<pid>.csv`):
 
@@ -389,7 +389,6 @@ df_games.columns = (['Game ID', 'White Player ID', 'Black Player ID',
 Below you can see that **Table 4** and **Table 5** shows the summary statistics for the `players` and `games` table. **8,574 players** and **50,087** games were inserted into the chessgames database.
 
 
-
 |Statistic | Rating |
 |---------|-----------|
 |count	|8574.000000|
@@ -401,10 +400,149 @@ Below you can see that **Table 4** and **Table 5** shows the summary statistics 
 |75%	|2479.000000|
 |max	|2882.000000|
 
-: First Table {#tbl-first}
+: Table 4: `players` table summary statistics
 
-<h2>Conclusion</h2>
+| Statistic |	Number of Moves |	Year |	
+|---------|-----------|---------|
+| count	| 50087.000000	| 	50087.000000 |
+| mean	| 	42.893485	| 	2005.074950 |
+| std	| 17.288031	| 	11.643902 |
+| min	| 0.000000	| 	1953.000000 |
+| 25%	| 31.000000	| 	2000.000000 |
+| 50%	| 41.000000	| 	2008.000000 |
+| 75%	| 	52.000000	| 	2014.000000 |
+| max	| 	255.000000	| 	2019.000000 |
+
+: Table 5: `games` table summary statistics
+
+<h2>Results</h2>
+
+**Figure 1** below shows the top 10 opening moves used by the thirty highest-ranked chess players. 356 games, or nearly 2.6% of the games won by the top players, were opened using the Sicilian, Najdorf (ECO = B90) move. 
+
+However, looking at the top opening moves per player as seen in **Figure 3**, the Sicilian, Najdorf (ECO = B90) move does not appear as the top move for most of the players. For instance, Magnus Carlsen, the highest-ranked player, has the Ruy Lopez, Berlin Defense as his top opening move. As shown in **Table 7**, Only 7 of the top 30 players have the Sicilian, Najdorf move as their top winning opening move. Also, if we look at the top 5 highest-rated players, 3 of 5 of them have the Ruy Lopez, Berlin Defense move as the top winning move.
+
+```{python}
+# | eval: false
+# | code-summary: Function to see top 10 opening moves and % won.
+df_top_moves = pd.read_sql("""SELECT g.white_pid, p.fname || ' ' || 
+                            p.lname, p.rating, g.eco, g.opening_move, count(*) 
+                            FROM games g
+                          INNER JOIN players p on g.white_pid = p.pid
+                          WHERE g.white_pid IN (SELECT pid FROM players 
+                                              WHERE rating != ''
+                                              ORDER BY rating DESC limit 30)
+                          AND g.result = '1-0'
+                          GROUP BY g.white_pid, g.eco, g.opening_move
+                          ORDER BY p.rating DESC, count(*) DESC""", conn)
+df_top_moves.columns = ['PID', 'Name', 'Rating',
+                        'ECO', 'Top Opening Move', 'Number of Games Won']
+df_top_moves = df_top_moves.groupby(['ECO', 'Top Opening Move'])[
+    'Number of Games Won'].sum().to_frame()
+df_top_moves = df_top_moves.sort_values('Number of Games Won', ascending=False)
+df_top_moves.reset_index(inplace=True)
+df_top_moves['% of Games Won'] = (
+    df_top_moves['Number of Games Won'] / df_top_moves['Number of Games Won'].sum() * 100)
+df_top_moves.head(10)
+```
 
 
----
-<i class='appendix'>Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/</i>
+|   ECO | Top Opening Move           |   Number of Games Won |   % of Games Won |
+|-------|----------------------------|----------------------|------------------|
+| B90   | Sicilian, Najdorf          |                  356 |         2.566321 |
+| A07   | King's Indian Attack       |                  250 |         1.802191 |
+| B12   | Caro-Kann Defense          |                  227 |         1.63639  |
+| C78   | Ruy Lopez                   |                  206 |         1.485006 |
+| C42   | Petrov Defense             |                  205 |         1.477797 |
+| C11   | French                     |                  204 |         1.470588 |
+| E15   | Queen's Indian             |                  203 |         1.463379 |
+| A04   | Reti Opening               |                  192 |         1.384083 |
+| D37   | Queen's Gambit Declined    |                  186 |         1.34083  |
+| C65   | Ruy Lopez, Berlin Defense  |                  176 |         1.268743 |
+
+: Table 6: Top Opening Moves of the 30 highest-rated players
+
+```{python}
+# | eval: false
+# | code-summary: Code to generate the Top Opening Moves.
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(dpi=150)
+df_top_moves[10::-1].plot.barh('Top Opening Move',
+                               '% of Games Won', ax=ax, color='#BF5209',
+                               legend=False)
+ax.set_xlabel('% of Games Won')
+```
+![FIGURE 1:Top Opening Moves of the 30 highest-rated chess players](image-outputs/image1-topmoves.png)
+
+Now, let us view the top opening moves per top player (top 10 players)
+
+```{python}
+# | eval: false
+# | code-summary: Code to generate the Top Opening Moves for top players
+df_top_moves = pd.read_sql("""SELECT g.white_pid, p.fname || ' ' || 
+                            p.lname, p.rating, g.eco, g.opening_move, count(*) 
+                            FROM games g
+                          INNER JOIN players p on g.white_pid = p.pid
+                          WHERE g.white_pid IN (SELECT pid FROM players 
+                                              WHERE rating != ''
+                                              ORDER BY rating DESC limit 30)
+                          AND g.result = '1-0'
+                          GROUP BY g.white_pid, g.eco
+                          ORDER BY p.rating DESC, count(*) DESC""", conn)
+df_top_moves.columns = ['PID', 'Name', 'Rating', 'ECO', 'Top Opening Move', 'Number of Games Won']
+df_top_moves = (df_top_moves
+                .groupby(['Rating', 'PID', 'Name', 'ECO', 'Top Opening Move'])
+                ['Number of Games Won'].sum().to_frame())
+df_top_moves = (df_top_moves.reset_index()
+                .sort_values(['Rating', 'Number of Games Won'],
+                             ascending=[False, False])
+                .set_index(['PID', 'Rating', 'Name', 'ECO', 'Top Opening Move']))
+df_top_moves = df_top_moves.groupby(level=0).head(10)
+df_top_moves.reset_index(inplace=True)
+df_top_moves
+
+names = df_top_moves['Name'].unique()
+
+for name in names:
+    fig, ax = plt.subplots()
+    df = df_top_moves[df_top_moves['Name'] == name]
+    df[10::-1].plot.barh('Top Opening Move', 'Number of Games Won',
+                         ax=ax, color='#BF5209', legend=False)
+    ax.set_title(name)
+    ax.set_xlabel('Number of Games Won')
+```
+
+:::  {#fig-top layout-ncol=1}
+
+![Magnus Carlsen](image-outputs/1-carlsen.png){width=100%}
+![Garry Kasparov](image-outputs/2-kasparov.png){width=100%}
+
+![Fabiano Caruana](image-outputs/3-caruana.png){width=100%}
+![Levon Aronian](image-outputs/4-aronian.png){width=100%}
+
+![Wesley So](image-outputs/5-so.png){width=100%}
+![Maxmime Vachier-Lagrave](image-outputs/6-lagrave.png){width=100%}
+
+![Viswanathan Anand](image-outputs/7-anand.png){width=100%}
+![Vladimir Kramnik](image-outputs/8-kramnik.png){width=100%}
+
+![Veselin Topalov](image-outputs/9-topalov.png){width=100%}
+![Hikaru Nakamura](image-outputs/10-nakamura.png){width=100%}
+
+Top Winning Moves Per Top Player
+:::
+
+<h2>Conclusions and Recommendations</h2>
+
+The results indicate that the Sicilian, Najdorf is the most used opening move by the thirty top-ranked players, with 356 games or nearly 2.6% of the games were won using this move. However, looking at the individual opening moves of each top-ranked players, there is no predominant opening move, with only 7 of the 30 players have the Sicilian, Najdorf move as their top winning opening move. Additionally, looking at the top five players, the Ruy Lopez, Berlin Defense was the most frequent opening move.
+        
+The methodology of the study does not take into account the total number of games each player competed in. Certain top ranked players have higher number of competition appearances. This may affect the number of instances the Sicilian, Najdorf may appear due to playing style bias. Further research may be conducted to explore normalizing the data by the number of games each top-player appeared in and won. Also, we can explore why the top-ranked players have a preference towards the Ruy Lopez, Berlin Defense.
+
+<h2>References</h2>
+<i>
+<ul>
+<li> [ChessGames.com](ChessGames.com)
+<li> [Chess Strategy for Chess Openings and Chess Principles](https://www.chesscentral.com/pages/learn-chess-play-better/chess-strategy-for-chess-openings-and-chess-principles.html)
+<li> [Chess Tournament Rules Regulations Fide Approved]( https://www.chessbazaar.com/blog/chess-tournament-rules-regulations-fide-approved/)
+<li> [Ten Rules Openings](https://exeterchessclub.org.uk/content/ten-rules-opening)
+</ul>
+</i>

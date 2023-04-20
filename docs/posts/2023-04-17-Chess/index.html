@@ -6,8 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2022-04-17">
-<meta name="description" content="Did you hear about the chess players who only used the Sicilian, Najdorf opening? It was their knight in shining armor! to victory">
+<meta name="dcterms.date" content="2022-04-20">
+<meta name="description" content="The Sicilian Defence is the best offense">
 
 <title>Sandro Luis R. Silva - An analysis of the opening moves of the highest-ranked chess players</title>
 <style>
@@ -118,7 +118,7 @@ gtag('config', 'G-9FYFKWYLVG', { 'anonymize_ip': true});
 <link rel="stylesheet" href="../../styles.css">
 <link rel="stylesheet" href="styles.scss">
 <meta name="twitter:title" content="Sandro Luis R. Silva - An analysis of the opening moves of the highest-ranked chess players">
-<meta name="twitter:description" content="Did you hear about the chess players who only used the Sicilian, Najdorf opening? It was their knight in shining armor! to victory">
+<meta name="twitter:description" content="The Sicilian Defence is the best offense">
 <meta name="twitter:image" content="thumbnail.jpeg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -178,7 +178,7 @@ gtag('config', 'G-9FYFKWYLVG', { 'anonymize_ip': true});
       <h1 class="title">An analysis of the opening moves of the highest-ranked chess players</h1>
                   <div>
         <div class="description">
-          Did you hear about the chess players who only used the Sicilian, Najdorf opening? It was their knight in shining armor! to victory
+          The Sicilian Defence is the best offense
         </div>
       </div>
                           <div class="quarto-categories">
@@ -197,7 +197,7 @@ gtag('config', 'G-9FYFKWYLVG', { 'anonymize_ip': true});
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">April 17, 2022</p>
+        <p class="date">April 20, 2022</p>
       </div>
     </div>
     
@@ -471,10 +471,8 @@ Table 1: <code>player</code> table fields
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>df_players.head(<span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<center>
-Table 2: Top 30 chess players based on Rating
-</center>
 <table class="table">
+<caption>Table 2: Top 30 chess players based on Rating</caption>
 <thead>
 <tr class="header">
 <th style="text-align: right;">Player ID</th>
@@ -667,10 +665,8 @@ Table 2: Top 30 chess players based on Rating
 </tbody>
 </table>
 <p>The <code>games</code> table was then populated by web scraping <small><code>http://www.chessgames.com/perl/chessplayer?pid=&lt;pid&gt;</code></small> and iterating over the top 30 player IDs. The following fields were extracted for each game:</p>
-<center>
-Table 3: <code>games</code> table fields
-</center>
 <table class="table">
+<caption>Table 3: <code>games</code> table fields</caption>
 <thead>
 <tr class="header">
 <th>Field</th>
@@ -834,9 +830,8 @@ Table 3: <code>games</code> table fields
 </details>
 </div>
 <p>Below you can see that <strong>Table 4</strong> and <strong>Table 5</strong> shows the summary statistics for the <code>players</code> and <code>games</code> table. <strong>8,574 players</strong> and <strong>50,087</strong> games were inserted into the chessgames database.</p>
-<div id="tbl-first" class="anchored">
 <table class="table">
-<caption>Table&nbsp;1: First Table</caption>
+<caption>Table 4: <code>players</code> table summary statistics</caption>
 <thead>
 <tr class="header">
 <th>Statistic</th>
@@ -878,12 +873,270 @@ Table 3: <code>games</code> table fields
 </tr>
 </tbody>
 </table>
+<table class="table">
+<caption>Table 5: <code>games</code> table summary statistics</caption>
+<thead>
+<tr class="header">
+<th>Statistic</th>
+<th>Number of Moves</th>
+<th>Year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>count</td>
+<td>50087.000000</td>
+<td>50087.000000</td>
+</tr>
+<tr class="even">
+<td>mean</td>
+<td>42.893485</td>
+<td>2005.074950</td>
+</tr>
+<tr class="odd">
+<td>std</td>
+<td>17.288031</td>
+<td>11.643902</td>
+</tr>
+<tr class="even">
+<td>min</td>
+<td>0.000000</td>
+<td>1953.000000</td>
+</tr>
+<tr class="odd">
+<td>25%</td>
+<td>31.000000</td>
+<td>2000.000000</td>
+</tr>
+<tr class="even">
+<td>50%</td>
+<td>41.000000</td>
+<td>2008.000000</td>
+</tr>
+<tr class="odd">
+<td>75%</td>
+<td>52.000000</td>
+<td>2014.000000</td>
+</tr>
+<tr class="even">
+<td>max</td>
+<td>255.000000</td>
+<td>2019.000000</td>
+</tr>
+</tbody>
+</table>
+<h2 class="anchored">
+Results
+</h2>
+<p><strong>Figure 1</strong> below shows the top 10 opening moves used by the thirty highest-ranked chess players. 356 games, or nearly 2.6% of the games won by the top players, were opened using the Sicilian, Najdorf (ECO = B90) move.</p>
+<p>However, looking at the top opening moves per player as seen in <strong>Figure 3</strong>, the Sicilian, Najdorf (ECO = B90) move does not appear as the top move for most of the players. For instance, Magnus Carlsen, the highest-ranked player, has the Ruy Lopez, Berlin Defense as his top opening move. As shown in <strong>Table 7</strong>, Only 7 of the top 30 players have the Sicilian, Najdorf move as their top winning opening move. Also, if we look at the top 5 highest-rated players, 3 of 5 of them have the Ruy Lopez, Berlin Defense move as the top winning move.</p>
+<div class="cell" data-execution_count="10">
+<details>
+<summary>Function to see top 10 opening moves and % won.</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> pd.read_sql(<span class="st">"""SELECT g.white_pid, p.fname || ' ' || </span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="st">                            p.lname, p.rating, g.eco, g.opening_move, count(*) </span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="st">                            FROM games g</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="st">                          INNER JOIN players p on g.white_pid = p.pid</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="st">                          WHERE g.white_pid IN (SELECT pid FROM players </span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="st">                                              WHERE rating != ''</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="st">                                              ORDER BY rating DESC limit 30)</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="st">                          AND g.result = '1-0'</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="st">                          GROUP BY g.white_pid, g.eco, g.opening_move</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="st">                          ORDER BY p.rating DESC, count(*) DESC"""</span>, conn)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>df_top_moves.columns <span class="op">=</span> [<span class="st">'PID'</span>, <span class="st">'Name'</span>, <span class="st">'Rating'</span>,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>                        <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>, <span class="st">'Number of Games Won'</span>]</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> df_top_moves.groupby([<span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>])[</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Number of Games Won'</span>].<span class="bu">sum</span>().to_frame()</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> df_top_moves.sort_values(<span class="st">'Number of Games Won'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>df_top_moves.reset_index(inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>df_top_moves[<span class="st">'</span><span class="sc">% o</span><span class="st">f Games Won'</span>] <span class="op">=</span> (</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    df_top_moves[<span class="st">'Number of Games Won'</span>] <span class="op">/</span> df_top_moves[<span class="st">'Number of Games Won'</span>].<span class="bu">sum</span>() <span class="op">*</span> <span class="dv">100</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>df_top_moves.head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<table class="table">
+<caption>Table 6: Top Opening Moves of the 30 highest-rated players</caption>
+<colgroup>
+<col style="width: 9%">
+<col style="width: 37%">
+<col style="width: 29%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ECO</th>
+<th>Top Opening Move</th>
+<th>Number of Games Won</th>
+<th>% of Games Won</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>B90</td>
+<td>Sicilian, Najdorf</td>
+<td>356</td>
+<td>2.566321</td>
+</tr>
+<tr class="even">
+<td>A07</td>
+<td>King’s Indian Attack</td>
+<td>250</td>
+<td>1.802191</td>
+</tr>
+<tr class="odd">
+<td>B12</td>
+<td>Caro-Kann Defense</td>
+<td>227</td>
+<td>1.63639</td>
+</tr>
+<tr class="even">
+<td>C78</td>
+<td>Ruy Lopez</td>
+<td>206</td>
+<td>1.485006</td>
+</tr>
+<tr class="odd">
+<td>C42</td>
+<td>Petrov Defense</td>
+<td>205</td>
+<td>1.477797</td>
+</tr>
+<tr class="even">
+<td>C11</td>
+<td>French</td>
+<td>204</td>
+<td>1.470588</td>
+</tr>
+<tr class="odd">
+<td>E15</td>
+<td>Queen’s Indian</td>
+<td>203</td>
+<td>1.463379</td>
+</tr>
+<tr class="even">
+<td>A04</td>
+<td>Reti Opening</td>
+<td>192</td>
+<td>1.384083</td>
+</tr>
+<tr class="odd">
+<td>D37</td>
+<td>Queen’s Gambit Declined</td>
+<td>186</td>
+<td>1.34083</td>
+</tr>
+<tr class="even">
+<td>C65</td>
+<td>Ruy Lopez, Berlin Defense</td>
+<td>176</td>
+<td>1.268743</td>
+</tr>
+</tbody>
+</table>
+<div class="cell" data-execution_count="11">
+<details>
+<summary>Code to generate the Top Opening Moves.</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(dpi<span class="op">=</span><span class="dv">150</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_top_moves[<span class="dv">10</span>::<span class="op">-</span><span class="dv">1</span>].plot.barh(<span class="st">'Top Opening Move'</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                               <span class="st">'</span><span class="sc">% o</span><span class="st">f Games Won'</span>, ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">'#BF5209'</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                               legend<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'</span><span class="sc">% o</span><span class="st">f Games Won'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/image1-topmoves.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 1:Top Opening Moves of the 30 highest-rated chess players</figcaption><p></p>
+</figure>
+</div>
+<p>Now, let us view the top opening moves per top player (top 10 players)</p>
+<div class="cell" data-execution_count="12">
+<details>
+<summary>Code to generate the Top Opening Moves for top players</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> pd.read_sql(<span class="st">"""SELECT g.white_pid, p.fname || ' ' || </span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">                            p.lname, p.rating, g.eco, g.opening_move, count(*) </span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">                            FROM games g</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">                          INNER JOIN players p on g.white_pid = p.pid</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="st">                          WHERE g.white_pid IN (SELECT pid FROM players </span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="st">                                              WHERE rating != ''</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="st">                                              ORDER BY rating DESC limit 30)</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="st">                          AND g.result = '1-0'</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="st">                          GROUP BY g.white_pid, g.eco</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">                          ORDER BY p.rating DESC, count(*) DESC"""</span>, conn)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>df_top_moves.columns <span class="op">=</span> [<span class="st">'PID'</span>, <span class="st">'Name'</span>, <span class="st">'Rating'</span>, <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>, <span class="st">'Number of Games Won'</span>]</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> (df_top_moves</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                .groupby([<span class="st">'Rating'</span>, <span class="st">'PID'</span>, <span class="st">'Name'</span>, <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>])</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                [<span class="st">'Number of Games Won'</span>].<span class="bu">sum</span>().to_frame())</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> (df_top_moves.reset_index()</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                .sort_values([<span class="st">'Rating'</span>, <span class="st">'Number of Games Won'</span>],</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                             ascending<span class="op">=</span>[<span class="va">False</span>, <span class="va">False</span>])</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>                .set_index([<span class="st">'PID'</span>, <span class="st">'Rating'</span>, <span class="st">'Name'</span>, <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>]))</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> df_top_moves.groupby(level<span class="op">=</span><span class="dv">0</span>).head(<span class="dv">10</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>df_top_moves.reset_index(inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>df_top_moves</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> df_top_moves[<span class="st">'Name'</span>].unique()</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> names:</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> df_top_moves[df_top_moves[<span class="st">'Name'</span>] <span class="op">==</span> name]</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    df[<span class="dv">10</span>::<span class="op">-</span><span class="dv">1</span>].plot.barh(<span class="st">'Top Opening Move'</span>, <span class="st">'Number of Games Won'</span>,</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>                         ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">'#BF5209'</span>, legend<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    ax.set_title(name)</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">'Number of Games Won'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="fig-top" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: center;">
+<p><img src="image-outputs/1-carlsen.png" class="img-fluid figure-img" style="width:100.0%" alt="Magnus Carlsen"> <img src="image-outputs/2-kasparov.png" class="img-fluid figure-img" style="width:100.0%" alt="Garry Kasparov"></p>
+</div>
+</div>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: center;">
+<p><img src="image-outputs/3-caruana.png" class="img-fluid figure-img" style="width:100.0%" alt="Fabiano Caruana"> <img src="image-outputs/4-aronian.png" class="img-fluid figure-img" style="width:100.0%" alt="Levon Aronian"></p>
+</div>
+</div>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: center;">
+<p><img src="image-outputs/5-so.png" class="img-fluid figure-img" style="width:100.0%" alt="Wesley So"> <img src="image-outputs/6-lagrave.png" class="img-fluid figure-img" style="width:100.0%" alt="Maxmime Vachier-Lagrave"></p>
+</div>
+</div>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: center;">
+<p><img src="image-outputs/7-anand.png" class="img-fluid figure-img" style="width:100.0%" alt="Viswanathan Anand"> <img src="image-outputs/8-kramnik.png" class="img-fluid figure-img" style="width:100.0%" alt="Vladimir Kramnik"></p>
+</div>
+</div>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: center;">
+<p><img src="image-outputs/9-topalov.png" class="img-fluid figure-img" style="width:100.0%" alt="Veselin Topalov"> <img src="image-outputs/10-nakamura.png" class="img-fluid figure-img" style="width:100.0%" alt="Hikaru Nakamura"></p>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;1: Top Winning Moves Per Top Player</figcaption><p></p>
+</figure>
 </div>
 <h2 class="anchored">
-Conclusion
+Conclusions and Recommendations
 </h2>
-<hr>
-<p><i class="appendix">Images: https://primer.com.ph/blog/2016/02/04/philippine-elections-the-culture-the-drama-the-battle-2/</i></p>
+<p>The results indicate that the Sicilian, Najdorf is the most used opening move by the thirty top-ranked players, with 356 games or nearly 2.6% of the games were won using this move. However, looking at the individual opening moves of each top-ranked players, there is no predominant opening move, with only 7 of the 30 players have the Sicilian, Najdorf move as their top winning opening move. Additionally, looking at the top five players, the Ruy Lopez, Berlin Defense was the most frequent opening move.</p>
+<p>The methodology of the study does not take into account the total number of games each player competed in. Certain top ranked players have higher number of competition appearances. This may affect the number of instances the Sicilian, Najdorf may appear due to playing style bias. Further research may be conducted to explore normalizing the data by the number of games each top-player appeared in and won. Also, we can explore why the top-ranked players have a preference towards the Ruy Lopez, Berlin Defense.</p>
+<h2 class="anchored">
+References
+</h2>
+<i>
+<ul>
+<li>
+<a href="ChessGames.com">ChessGames.com</a>
+</li><li>
+<a href="https://www.chesscentral.com/pages/learn-chess-play-better/chess-strategy-for-chess-openings-and-chess-principles.html">Chess Strategy for Chess Openings and Chess Principles</a>
+</li><li>
+<a href="https://www.chessbazaar.com/blog/chess-tournament-rules-regulations-fide-approved/">Chess Tournament Rules Regulations Fide Approved</a>
+</li><li>
+<a href="https://exeterchessclub.org.uk/content/ten-rules-opening">Ten Rules Openings</a>
+</li></ul>
+</i><p><i></i></p>
 
 
 
