@@ -25,7 +25,7 @@ website:
 format:
   html:
     theme: journal
-    css: styles.css
+    css: custom-styles.scss
     include-in-header: html/google.html
     include-before-body: html/google.html
 
