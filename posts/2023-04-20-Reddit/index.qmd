@@ -8,7 +8,7 @@ image: thumbnail.jpeg
 format:
   html:
     code-fold: true 
-    css: custom-styles.scss
+    # css: custom-styles.scss
 jupyter: python3
 
 editor: 
@@ -18,14 +18,14 @@ draft: true # setting this to `true` will prevent your post from appearing on yo
 
 ---
 
-![](thumbnail.jpeg)
+<!-- ![](thumbnail.jpeg) -->
 
 <h1>Executive Summary</h1>
 <div class='executive-summary'>
 
 Original creation and submission for this notebook was last June 2019.
 
-Reddit (https://www.reddit.com/) is an American discussion and aggregation website for user-generated content with more than 500 million monthly visitors. We uncovered the underlying categories or "subreddits" by performing representative-based clustering on a sample of Reddit titles. Results reveal that Reddit is a very American-centric platform and that the two main themes are (a) U.S. politics, and (b) seeking help from other Redditors on a wide range of topics including technology, food, and legal matters. For a small number of clusters ($n=10$), the high-level categories that emerged include the 2016 U.S. Presidential Elections (Donald Trump, Hillary Clinton, and Bernie Sanders), food, legal concerns, and "New year"-related subreddits. Increasing the number of clusters to $n=16$ revealed more specific subreddits such as technical support, recipes, apartment/rental concerns, and reaction compilations.
+[Reddit](https://www.reddit.com/) is an American discussion and aggregation website for user-generated content with more than 500 million monthly visitors. We uncovered the underlying categories or "subreddits" by performing representative-based clustering on a sample of Reddit titles. Results reveal that Reddit is a very American-centric platform and that the two main themes are (a) U.S. politics, and (b) seeking help from other Redditors on a wide range of topics including technology, food, and legal matters. For a small number of clusters ($n=10$), the high-level categories that emerged include the 2016 U.S. Presidential Elections (Donald Trump, Hillary Clinton, and Bernie Sanders), food, legal concerns, and "New year"-related subreddits. Increasing the number of clusters to $n=16$ revealed more specific subreddits such as technical support, recipes, apartment/rental concerns, and reaction compilations.
 </div>
 
 <h2>Acknowledgements</h2>
@@ -34,15 +34,22 @@ This analysis was done together with my Lab partner, George Esleta, and Cohortma
 
 <h2> A. Introduction and the Problem Statement </h2>
 
-Chess is a two player strategy game played on a checked 8 by 8 board. The 8 by 8 grid consists of 64 squares where each player is located at opposite ends of the checked board. At the beginning of the game, each player assigned a color of either Black or White. The color scheme indicates which player will move first, with the player with the white pieces moving first. Moves are alternating between players, with each player allowed to only move one chess piece each round.
-
-Each player is given six unique types of pieces with varying numbers, with each unique piece moving differently across the board. Pieces may move to squares occupied by another chess piece. If the player moves into a square occupied by an opponent’s piece, then the opponent’s piece is captured and taken off the chessboard. The purpose of the game is to capture the opponent’s king, signaling a checkmate. Each game is then concluded with either of three scenarios: "1–0" means White won, "0–1" means Black won, and "½–½" indicates a draw (also known as a stalemate).
-
-The first moves in any chess game, also known as a player’s opening move, are the most crucial as it sets the tone, foundation and area of control of the players. The rationale behind this rests on the assumption that the first few moves will influence a player’s probability of winning. The objectives of the opening moves allow each player needs to gain dominance of the grid by: (1) getting most of their pieces out of their default positions as this allows more possible moves), and (2) getting control of the centre of the board (as this allows better dominance).
-
-With the assumption the player’s opening moves may play influential role to the player’s grid control and outcome, the paper will explore the top ranked players opening moves. The purpose of this paper is to determine if there is a specific opening move that each of the top-ranking players use.
+[Reddit](https://www.reddit.com/) is a discussion and content aggregation website. As of June 2019, it is ranked as the #5 most visited website in the United States and #15 worldwide. Registered members, also called "Redditors", upload user-generated content (UGC) which are either voted up or voted down by other Redditors. Reddit posts are grouped into user-created boards or communities called "subreddits", with each subreddit having a specific topic such as food, entertainment, and politics.
 
 <h2> B. Methodology</h2>
+
+Reddit titles and authors were scraped from the [Reddit](https://www.reddit.com/) website and stored in a text file. The file is tab-delimited and has two columns: author and title.
+
+The general workflow for clustering the Reddit titles involves the following steps:
+<ol>
+<li> Pre-requisites: Load Requirement Package
+<li> Reading the Reddit data
+<li> Initial data cleaning
+<li> Exploratory data analysis
+<li> Vectorization (bag-of-words representation) using TFIDF Vectorizer
+<li> Dimensionality reduction using Latent Semantic Analysis (LSA)
+<li> Representative-based clustering using *k*-means
+</ol>
 
 <h3>Pre-requisites: Load Requirement Package</h3>
 
@@ -51,42 +58,56 @@ Before anything else, let us first load all important modules for this exercise.
 # | eval: false
 # | code-summary: Loading required modules
 
-# These are the standard imports
+# These are standard imports
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import plotly.plotly as py
-import plotly.graph_objs as go
-from plotly.offline import iplot, init_notebook_mode
+import numpy as np
 
-# Using plotly + cufflinks in offline mode
-import cufflinks
-cufflinks.go_offline(connected=True)
-init_notebook_mode(connected=True)
+from collections import Counter
+from IPython.display import display_html
+from wordcloud import WordCloud, STOPWORDS
 
-%matplotlib inline
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction import stop_words
+from sklearn.manifold import TSNE
+from sklearn.decomposition import TruncatedSVD
+from sklearn.metrics import calinski_harabaz_score, silhouette_score
+from sklearn.cluster import KMeans
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import Normalizer
 
-# This is to allow a code fold in jupyter notebook
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
+from nltk import FreqDist, RegexpTokenizer
+
 from IPython.display import HTML
-HTML('''<script>
-  function code_toggle() {
-    if (code_shown){
-      $('div.input').hide('500');
-      $('#toggleButton').val('Show Code')
-    } else {
-      $('div.input').show('500');
-      $('#toggleButton').val('Hide Code')
-    }
-    code_shown = !code_shown
-  }
+from scipy.spatial.distance import euclidean
+from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.spatial.distance import euclidean, cityblock
 
-  $( document ).ready(function(){
-    code_shown=false;
-    $('div.input').hide()
-  });
+import urllib
+import requests
+import pprint
+from PIL import Image
+
+pp = pprint.PrettyPrinter(indent=4)
+
+HTML('''<script>
+code_show=true; 
+function code_toggle() {
+ if (code_show){
+ $('div.input').hide();
+ } else {
+ $('div.input').show();
+ }
+ code_show = !code_show
+} 
+$( document ).ready(code_toggle);
 </script>
-<form action="javascript:code_toggle()"><input type="submit" id="toggleButton" value="Show Code"></form>''')
-```
+<form action="javascript:code_toggle()"><input type="submit" value="Click here to toggle on/off the raw code."></form>''')
 
 Additionally, we should create a sqlite3 database for where we will store the data what we will scrape. For that, we shall use the `sqlite3` python module.
 
@@ -471,7 +492,7 @@ df_top_moves[10::-1].plot.barh('Top Opening Move',
                                legend=False)
 ax.set_xlabel('% of Games Won')
 ```
-![FIGURE 1:Top Opening Moves of the 30 highest-rated chess players](image-outputs/image1-topmoves.png)
+<!-- ![FIGURE 1:Top Opening Moves of the 30 highest-rated chess players](image-outputs/image1-topmoves.png) -->
 
 Now, let us view the top opening moves per top player (top 10 players)
 
@@ -512,21 +533,6 @@ for name in names:
 ```
 
 :::  {#fig-top layout-ncol=1}
-
-![Magnus Carlsen](image-outputs/1-carlsen.png){width=100%}
-![Garry Kasparov](image-outputs/2-kasparov.png){width=100%}
-
-![Fabiano Caruana](image-outputs/3-caruana.png){width=100%}
-![Levon Aronian](image-outputs/4-aronian.png){width=100%}
-
-![Wesley So](image-outputs/5-so.png){width=100%}
-![Maxmime Vachier-Lagrave](image-outputs/6-lagrave.png){width=100%}
-
-![Viswanathan Anand](image-outputs/7-anand.png){width=100%}
-![Vladimir Kramnik](image-outputs/8-kramnik.png){width=100%}
-
-![Veselin Topalov](image-outputs/9-topalov.png){width=100%}
-![Hikaru Nakamura](image-outputs/10-nakamura.png){width=100%}
 
 Top Winning Moves Per Top Player
 :::

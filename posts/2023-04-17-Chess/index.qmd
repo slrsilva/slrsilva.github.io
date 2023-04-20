@@ -8,7 +8,7 @@ image: thumbnail.jpeg
 format:
   html:
     code-fold: true 
-    css: custom-styles.scss
+    # css: custom-styles.scss
 jupyter: python3
 
 editor: 
