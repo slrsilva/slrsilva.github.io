@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.313">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Revealing Rappler’s underlying focus">
+
+<title>Sandro Luis R. Silva - UnwRappler</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/profile.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-9FYFKWYLVG"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-9FYFKWYLVG', { 'anonymize_ip': true});
+</script>
+
+
+<meta name="twitter:title" content="Sandro Luis R. Silva - UnwRappler">
+<meta name="twitter:description" content="Revealing Rappler’s underlying focus">
+<meta name="twitter:image" content="post-thumbnail.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Sandro Luis R. Silva</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html" rel="" target="">
+ <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html" rel="" target="">
+ <span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../resume.html" rel="" target="">
+ <span class="menu-text">Resume</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/slrsilva/slrsilva.github.io" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">UnwRappler</h1>
+                  <div>
+        <div class="description">
+          Revealing Rappler’s underlying focus
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">python</div>
+                <div class="quarto-category">unsupervised-learning</div>
+                <div class="quarto-category">clustering</div>
+                <div class="quarto-category">news</div>
+                <div class="quarto-category">rappler</div>
+                <div class="quarto-category">analysis</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">Apr 23, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+<p><img src="thumbnail.png" class="img-fluid"></p>
+<h2 class="anchored">
+Authors
+</h2>
+<p>This analysis was done together with my groupmates George Esleta, Carmelita Esclanda, and Elmer Robles.</p>
+<h2 class="anchored">
+Executie Summary
+</h2>
+<div class="executive-summary">
+<p>Rappler, one of the leading online news publishers in the Philippines, seeks to inspire community engagement and create action for social change through citizen journalism. However, it has recently been under scrutiny by the Philippine government for “twisted” reporting. This study aims to uncover the underlying themes of Rappler news articles via unsupervised clustering techniques and see if there is an inherent concentration of news in a specific theme. A total of 11,079 articles were extracted from Rappler’s national news section published from January 2018 to May 2019. Features were extracted from the articles using a term frequency-inverse document frequency (TF-IDF) vectorizer and dimensions were reduced by implementing Latent Semantic Analysis (LSA). Lastly, unsupervised clustering via k-means algorithm was applied to group the articles and internal validation metrics were utilized to determine the optimal number of clusters. Ten clusters were uncovered, with Philippine President Rodrigo Duterte as the dominant cluster. The remaining themes touch on different branches of government, police and weather updates, and trending national issues. The insights gained from this research can aid Rappler in balancing its reporting by lessening bias towards specific topics.</p>
+</div>
+<div class="column-page">
+<p><img src="source/rappler_poster.png" class="img-fluid"></p>
+</div>
+<h2 class="anchored">
+Introduction
+</h2>
+<p>Rappler is one of the leading online news publishers in the Philippines. It was started in 2011 by former CNN journalist Maria Ressa. However, since 2018, Rappler has been under heavy scrutiny by the Philippine government for “twisted” and “biased reporting”. Philippine President Rodrigo Duterte even went so far as calling Rappler a “fake news” outlet that publishes articles that are “pregnant with falsity.” [1] Rappler has been on the receiving end of criminal cases from the Philippine governments. BIR filed several counts of tax evasion charges against Rappler CEO Maria Ressa. Cyberlibel cases were also filed against Ressa.</p>
+<p>This begs the question “Why is Rappler being targeted by the Duterte Administration?” Is <a href="https://www.rappler.com/nation/197230-duterte-rappler-ban-twisted-reporting">Rappler</a> really “twisted” and “biased” in its reporting? To answer this question, we uncovered the underlying themes of Rappler’s news articles via unsupervised clustering, to see if there is indeed an inherent concentration of news in a specific topic or theme.</p>
+<h2 class="anchored">
+Business Value
+</h2>
+<p>Extracting themes from a set of articles programmatically has a widespread application in the digital publishing industry and can be used to deliver business value to readers, journalists, advertisers, aggregators, and researchers.</p>
+<ol type="1">
+<li><p><strong>Readers in the digital age have no patience.</strong> They are more likely to use a search engine to retrieve a set of ranked articles from multiple news sources and it becomes a challenge for online news platforms to engage a reader continuously. Automatic theme extraction and clustering of articles provide the ability to structure a set of articles in order to make it easier for readers to navigate to related articles. If articles can be presented in a logical hierarchy driven by patterns in the data, human intervention is minimized (saving on labor costs) and the reader is kept on the news platform, increasing engagement time on the site.</p></li>
+<li><p><strong>News Publishers and Journalists seeking to address topics of broad interest to their readership can benefit from a thematic clustering articles to determine the balance of news coverage. </strong> Publishing organizations are always looking for gaps in news coverage in order to offer readers some perspective and insight into topics that are not heavily covered. By examining existing themes holistically, they can better gauge what is missing and what their next article should be about.</p></li>
+<li><p><strong>Advertisers that are considering online news platforms to reach specific customer segments can tailor their messages so that they are congruent with the themes that readers are interested in. </strong> For instance, themes dealing with legislative or judicial proceedings may appeal to advertisers whose clients are lawyers or law schools. Advertisers of tourism and tourist agencies may be interested in weather and specific vacation destinations, such as Boracay.</p></li>
+<li><p><strong>Aggregators in the licensed publishing industry create packages of content for redistribution. </strong> Their business model, which can be subscription or advertiser-based, is to target specific customers based on their geographic, demographic, and psychographic profile. For instance, if an investor wanted to understand market conditions for a particular industry, they would subscribe to a real-time news delivery service that was able to provide the relevant articles.</p></li>
+<li><p><strong>Researchers make money by selling analytical reports. </strong> By studying the themes presented on news platforms and combining the study with other metrics such as readership engagement, sentiment analysis, and political stance, they can make in-depth comparisons with other news delivery platforms to better inform advertisers and aggregators.</p></li>
+</ol>
+<h2 class="anchored">
+Methodology
+</h2>
+<p>To uncover the underlying themes, a total of 11,079 news articles published from January 2018 to May 2019 were retrieved from Rappler’s Nation section (https://www.rappler.com/nation). The general workflow for clustering the Rappler articles as shown in Figure 1 involves the following steps:</p>
+<ol type="1">
+<li>Data Extraction</li>
+<li>Data Storage</li>
+<li>Data Preprocessing</li>
+<li>Exploratory Data Analysis</li>
+<li>Feature Extraction via TFIDF Vectorization</li>
+<li>Dimensionality Reduction using Latent Semantic Analysis (LSA)</li>
+<li>Unsupervised clustering using k-means algorithm</li>
+</ol>
+<p>Each step of the workflow will be discussed in the succeeding sections. <br><br></p>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_methodology.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 1: Workflow for clustering the Rappler Articles</figcaption><p></p>
+</figure>
+</div>
+</div>
+<!-- <iframe
+    width='1200'
+    height='900'
+    src="source/DMW - LT01 - Tech Paper.pdf">
+</iframe> -->
+<h3 class="anchored">
+Data Extraction
+</h3>
+<p>To collect data for the analysis, web scraping tools were utilized, namely the Python’s requests and BeautifulSoup modules, to extract news articles from the Nation section of Rappler website between the period of January 2018 and May 2019. The extraction process included the extraction of the article’s content and relevant metadata while excluding non-essential information such as image captions, author and photographer details, location headers, hyperlinks, social media text, and general sign-offs. To ensure data accuracy and validity, an initial cleaning process was performed to eliminate irrelevant information.</p>
+<h3 class="anchored">
+Data Storage
+</h3>
+<p>The extracted articles were stored in a local sqlite database. A total of 11,079 news articles were stored in the database. Table 1 shows the data description:</p>
+<p>TABLE 1: Data Dictionary</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Data</th>
+<th>Data type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>article_id</td>
+<td>VARCHAR</td>
+<td>Unique ID identifier</td>
+</tr>
+<tr class="even">
+<td>url</td>
+<td>VARCHAR</td>
+<td>Relative URL</td>
+</tr>
+<tr class="odd">
+<td>headline</td>
+<td>VARCHAR</td>
+<td>Headline title</td>
+</tr>
+<tr class="even">
+<td>metadesc</td>
+<td>VARCHAR</td>
+<td>Quick synopsis of the article</td>
+</tr>
+<tr class="odd">
+<td>label</td>
+<td>VARCHAR</td>
+<td>Absolute URL</td>
+</tr>
+<tr class="even">
+<td>author</td>
+<td>VARCHAR</td>
+<td>Author name(s)</td>
+</tr>
+<tr class="odd">
+<td>published_date</td>
+<td>VARCHAR</td>
+<td>Published date</td>
+</tr>
+<tr class="even">
+<td>updated_date</td>
+<td>VARCHAR</td>
+<td>Date updated</td>
+</tr>
+<tr class="odd">
+<td>article</td>
+<td>VARCHAR</td>
+<td>Article text</td>
+</tr>
+<tr class="even">
+<td>metakey</td>
+<td>VARCHAR</td>
+<td>List of metatags associated with the article</td>
+</tr>
+</tbody>
+</table>
+<h3 class="anchored">
+Data Preprocessing
+</h3>
+<p>Data preprocessing was implemented on the acquired article text. The text preprocessing involves:</p>
+<ol type="1">
+<li>Neutralizing text case-sensitivity by converting text to lowercase</li>
+<li>Omitting unnecessary whitespaces by removing leading and trailing whitespace</li>
+<li>Converting words to root form by performing stemming, via NLTK’s <code>PorterStemmer</code>.</li>
+</ol>
+<h3 class="anchored">
+Exploratory Data Analysis
+</h3>
+<p>Exploratory data analysis was conducted on the article corpus to identify any prominent themes or topics before clustering the data. Figure 2 illustrates the word cloud and word frequency graph for the Rappler news articles published from January 2018 to May 2019. The results demonstrate that the most frequently mentioned word in the dataset is President Rodrigo Duterte, indicating that he is a significant topic in Rappler’s news articles during that period. Furthermore, notable words such as government, Philippines, police, and justice were also identified. To confirm these findings, feature extraction and cluster analysis were performed on the dataset. Consequently, it can be inferred that at least one article cluster should have Duterte as the recurring theme. <br> <br></p>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_eda.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 2: (left) Word cloud of Rappler news articles from January 2018 to May 2019, (right) Word count of the top 15 most occurring words in the Rappler article corpus. Images show Former President Duterte was the top topic during the period.</figcaption><p></p>
+</figure>
+</div>
+</div>
+<h3 class="anchored">
+Feature Extraction
+</h3>
+<p>To vectorize the text, the term frequency-inverse document frequency (TF-IDF) vectorizer was implemented using scikit-learn’s <code>Tfidfvectorizer</code>. Unlike an equal weighting vectorizer, the TF-IDF statistic measures the significance of a word to both the document and the corpus. The implementation of the vectorizer also involved considering additional parameters, such as:</p>
+<ol type="1">
+<li>the removal of English stopwords</li>
+<li>the inclusion of unigram, bigram, and trigram n-grams.</li>
+<li>words that appeared less than 0.1% or more than 70% were discarded from the vectorization</li>
+</ol>
+<p>TABLE 2: Hyperparameter adjustments</p>
+<table class="table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 68%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>min_df</code></td>
+<td>ignore terms that have a document frequency strictly lower than the given threshold</td>
+<td>0.001</td>
+</tr>
+<tr class="even">
+<td><code>max_df</code></td>
+<td>ignore terms that have a document frequency strictly higher than the given threshold</td>
+<td>0.7</td>
+</tr>
+<tr class="odd">
+<td><code>ngram_range</code></td>
+<td>The lower and upper boundary of the range of n-values for different n-grams to be extracted. All values of n such that min_n &lt;= n &lt;= max_n will be used</td>
+<td>(1,3)</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>TFidfVectorizer</code> performs further cleaning of the data by removing both frequent words and rare words. Stopwords, or words that appear too frequently in the English and Filipino language (e.g., the, a, an, and, or), were dropped from the corpus. Rappler-specific stopwords, or words that appear in more than 70% of the titles, were also ignored by setting the <code>max_df</code> parameter of TFidfVectorizer to <code>max_df = 0.7</code>.</p>
+<p>Rare words, or words that appeared in less than 0.1% of the Rappler articles, were also excluded from the corpus. This was implemented by setting the <code>min_df</code> parameter of the TFidfVectorizer to <code>min_df = 0.001</code>.</p>
+<p>Unigrams, bigrams, and trigrams were extracted as part of the vocabulary by setting the ngram_range parameter of the TFidfVectorizer to <code>ngram_range = (1,3)</code>. This range of n-grams was chosen to preserve the context of certain phrases such as “Rodrigo Duterte”, “Supreme Court” (<code>n=2</code>), and “Philippine National Police” (<code>n=3</code>)</p>
+<p>After vectorization, the collection of Rappler articles has <strong>36,254</strong> unique items in its vocabulary.</p>
+<h3 class="anchored">
+Dimensionality Reduction
+</h3>
+<p>The resulting feature set was a 10,873 by 36,254 matrix, which was computationally expensive to cluster. To reduce computational power, the vectorized data underwent dimensionality reduction through latent semantic analysis (LSA) using the <code>TruncatedSVD</code> class of sklearn.</p>
+<p>In general, a lower number of dimensions facilitates wider comparisons of themes in a collection of text, while a higher number of dimensions enables more specific comparisons. A dimensionality of 50 to 1000 is typically suitable depending on the document collection’s size and nature. Sensitivity analysis was conducted to determine the optimal number of components, starting with 50 components and incrementing by 50 until 1000 components. The analysis found that using 300 components (<code>n=300</code>) extracted the broader underlying themes.</p>
+<h3 class="anchored">
+Unsupervised Clustering
+</h3>
+<p>Unsupervised clustering using the k-means algorithm was utilized to extract the underlying themes present in the Rappler news articles. To determine the optimal number of clusters, sensitivity analysis was performed by testing different cluster counts ranging from <code>k=2</code> to <code>k=20</code>. Internal validation were examined to select the optimal number of clusters. These validation metrics involved:</p>
+<ol type="1">
+<li>minimizing the Intracluster to Intercluster distance ratio ()</li>
+<li>maximizing the Calinski-Harabasz score</li>
+<li>maximizing the Silhouette coefficient, and</li>
+<li>minimizing the sum of square distance to centroids coefficient</li>
+</ol>
+<p>The next section will discuss the resulting article clusters and the optimal number of cluster counts.</p>
+<h3 class="anchored">
+Results
+</h3>
+<p>To determine the optimal number of clusters, k-means clustering was implemented for different values of the cluster count k from k=2 to k=20. Shown in Figure 3 is the variation in the values of the different internal validation measures as the cluster count k is increased. The silhouette coefficient is monotonically increasing as the number of clusters is increased, suggesting increasing separation of the clusters. However, to keep the clustering parsimonious, the SSE elbow method was used instead to determine the optimal value of k. Plotted below are the values of the internal validation criteria for values of 𝑘 between 2 and 20. Using the elbow method, 𝑘=10 is a good candidate for the number of clusters.</p>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_validation.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 3: Plots of the various internal validation measures for k=2 to k=20. Using elbow method at k=10</figcaption><p></p>
+</figure>
+</div>
+</div>
+<h4 class="anchored">
+Cluster Themes at <code>k=10</code>
+</h4>
+<p>k-means clustering was performed on the Rappler articles using a cluster count of k=10. To infer the underlying theme of each article cluster, cluster word clouds were created as shown in Figure 5.</p>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_wordcloud.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 5: Rappler Wordcloud for each cluster (k=10)</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>Form these word clouds, the underlying theme of each article cluster was identified as follows:</p>
+<ol type="1">
+<li>Legislative</li>
+<li>Foreign Affairs (PH-China Relations)</li>
+<li>General News</li>
+<li>Judiciary</li>
+<li>Weather</li>
+<li>President Rodrigo Duterte</li>
+<li>2019 Philippine Midterm Elections</li>
+<li>Police</li>
+<li>Boracay Rehabilitation</li>
+<li>Health</li>
+</ol>
+<p>Figure 6 displays the distribution of the number of articles across the identified clusters. The General News cluster accounts for over 25% of the articles, and the Duterte cluster is the second-largest with more than 15% of the news articles. This validates the initial findings of the exploratory data analysis, which showed that President Rodrigo Duterte is the most mentioned word in the dataset, and that Duterte is a prominent topic in Rappler’s news articles.</p>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_themes_10.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 6: Topic distibution of Rappler articles sorted descending.</figcaption><p></p>
+</figure>
+</div>
+</div>
+<h3 class="anchored">
+Insights
+</h3>
+<p>The application of the unsupervised clustering technique on a corpus of 11, 079 news articles shows consistency of topic clusters across different resolutions that include:</p>
+<h4 class="anchored">
+Duterte Article Cluster
+</h4>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_duterte.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 7: (left) Word cloud and top words for the Duterte article cluster, (right) Top words mentioned in the Duterte corpus - it can be inferred that the subthemes of this cluster include human rights violations, the war on illegal drugs, and Senator Antonio Trillanes</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>The dominant theme of Rappler news articles is Philippine President Rodrigo Duterte, with nearly 16% of news articles in this cluster. Subthemes in this cluster include the war on drugs, human rights, Senator Antonio Trillanes, and Duterte’s ongoing war versus Rappler. This can imply that Rappler is particular with the President’s undertakings and that while this may be reasonable, Rappler has to review its focus given their strife with the President.</p>
+<h4 class="anchored">
+Philippine Politics Article Cluster (Legislative and Judiciary)
+</h4>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_judiciary.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 8: (left) Word cloud and top words for the Judiciary article cluster, (right) From the top words, it can be inferred that the subthemes of this cluster include the impeachment of former Chief Justice Lourdes Sereno and the drug cases against Senator Leila De Lima.</figcaption><p></p>
+</figure>
+</div>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_legislative.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 9: (left) Wordcloud and top words for the Legislative article cluster, (right) From the top words, it can be inferred that the subthemes of this cluster include the national budget and the proposed shift to a federal system</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>The other major themes are related to the other branches of the Philippine government, particularly the Legislative branch (House of Representatives, Senate) and the Judicial branch (Supreme Court).</p>
+<p>Figure 8 shows that the Judicial cluster contains subthemes such as the impeachment of former Chief Justice Maria Lourdes Sereno and the drug charges filed against Senator Leila de Lima by the DOJ. In the case of Sereno, the impeachment was due to various issues including failure to disclose assets in her SALN and misuse of public funds. On the other hand, De Lima was charged with drug-related offenses.</p>
+<p>he Legislative article cluster (Figure 9) includes subthemes such as budget and proposed changes in the constitution to shift to a federal type of government. Similar to the dominant clusters, this cluster revolves around politics. It is evident that Rappler has a strong focus on the political landscape in the Philippines, particularly on current and significant issues.</p>
+<h4 class="anchored">
+Police and Weather Clusters
+</h4>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_legislative.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 10: (left) Wordcloud and (right) top words in the Police article cluster</figcaption><p></p>
+</figure>
+</div>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_legislative.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 11: (left) Wordcloud and (right) top words in the Weather article cluster</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>Two recurring themes regardless of the number of clusters selected are police reports and weather reports. In line with the duterte cluster, it is sensible that the cluster about the police can be generated given the “oplan tokhang” implemented by the administration. Meanwhile, the weather cluster is sound considering the country’s geographic circumstances.</p>
+<h4 class="anchored">
+Time-Specific Article Clusters
+</h4>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_current.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 12: (left) Wordcloud and (right) top words in the 2019 Midterm Elections article cluster</figcaption><p></p>
+</figure>
+</div>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_boracay.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 13: (left) Wordcloud and (right) top words in the Boracay article cluster</figcaption><p></p>
+</figure>
+</div>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_health.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 14: (left) Wordcloud and (right) top words in the Dengue Vaccine article cluster</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>The remaining themes are time-related and reflect major events during the timeframe selected (January 2019 to May 2019), such as the 2019 Philippine Midterm Elections, Boracay Island Rehabilitation (April 2018-October 2018), and the Dengvaxia (dengue vaccine) controversy.</p>
+<h4 class="anchored">
+Sensitivity Analysiss
+</h4>
+<p>While it was concluded that 10 is the optimal number of groupings for the subject dataset, sensitivity analysis has been performed to test the robustness of the results gathered. Shown below are the resulting article clusters for <code>k=6</code> and <code>k=16</code>. It is noted that as the cluster count is increased, the most affected clusters are bigger ones, especially the Duterte cluster. As such, it can be deduced that said cluster has many subclusters which are differentiated when cluster count is increased. Nevertheless, the core clusters (e.g., General News, Duterte, 2019 Election, Police) created regardless of the number of clusters are constant.</p>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_6.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 15: Clustering and Cluster size distribution for <code>k=6</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="source/rappler_16.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">FIGURE 16: Clustering and Cluster size distribution for <code>k=16</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<h2 class="anchored">
+Summary &amp; Conclusions
+</h2>
+<p>Grouping of articles into clusters of related topics by unsupervised clustering method has significant value to communication researchers and media practitioners in studying news output at scale and its repercussions. This study was able to unwrap 10 major themes ranging from General News, Politics, Weather, Health and relevant events. As such, the result can be used as a starting point for a generalized theme extraction project from a national corpus in order to learn the general interest and sentiments of the people.</p>
+<h2 class="anchored">
+Recommendations
+</h2>
+<p>The following points can be considered in future research related to this work:</p>
+<ol type="1">
+<li><p><strong>Comparative cluster analysis with other Philippine news outfits</strong> (Inquirer, ABS-CBN News, GMA News) can be explored to validate Rappler’s focus on particular topics;</p></li>
+<li><p><strong>Sentiment analysis can explored to look into the subjective information or emotional states of the article.</strong> The value of combining clustering with sentiment analysis could be implemented in making better sense of Rappler’s public opinion on trending issues or the current administration; and,</p></li>
+<li><p><strong>Historical analysis can be explored to compare the rappler data during previous administrations with the current to recognize difference in rappler’s focus per administration.</strong> Administration changes can affect the political landscape and prioritization of complex issues. For instance, if an issue from one administration was solved in the next administration.</p></li>
+</ol>
+<h2 class="anchored">
+References
+</h2>
+<ol type="1">
+<li><a href="https://www.rappler.com/nation/197230-duterte-rappler-ban-twisted-reporting">Duterte says he banned Rappler due to ‘twisted’ reporting</a></li>
+<li><a href="https://www.rappler.com/nation/193806-duterte-fake-news-outlet">Duterte calls Rappler ’fake news outlet”</a></li>
+<li><a href="https://towardsdatascience.com/all-the-news-17fa34b52b9d">All the news:Clustering 143,000 articles with KMeans</a></li>
+<li><a href="https://seangtkelley.me/blog/2018/01/03/news-article-clustering">Story Discovery using K-Means Clustering on news articles</a></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py">Clustering text documents using k-means</a></li>
+<li><a href="http://www.scholarpedia.org/article/Latent_semantic_analysis">Latent semantic analysis</a></li>
+</ol>
+
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
