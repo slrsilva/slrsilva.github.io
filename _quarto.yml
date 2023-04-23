@@ -19,9 +19,9 @@ website:
 
     right:
       - icon: github
-        href: https://github.com/
-      - icon: twitter
-        href: https://twitter.com
+        href: https://github.com/slrsilva/slrsilva.github.io
+      # - icon: twitter
+      #   href: https://twitter.com
 format:
   html:
     theme: 
