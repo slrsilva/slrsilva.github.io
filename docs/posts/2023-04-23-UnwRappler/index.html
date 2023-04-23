@@ -369,7 +369,7 @@ Unsupervised Clustering
 </h3>
 <p>Unsupervised clustering using the k-means algorithm was utilized to extract the underlying themes present in the Rappler news articles. To determine the optimal number of clusters, sensitivity analysis was performed by testing different cluster counts ranging from <code>k=2</code> to <code>k=20</code>. Internal validation were examined to select the optimal number of clusters. These validation metrics involved:</p>
 <ol type="1">
-<li>minimizing the Intracluster to Intercluster distance ratio ()</li>
+<li>minimizing the Intracluster to Intercluster distance ratio</li>
 <li>maximizing the Calinski-Harabasz score</li>
 <li>maximizing the Silhouette coefficient, and</li>
 <li>minimizing the sum of square distance to centroids coefficient</li>
@@ -378,7 +378,7 @@ Unsupervised Clustering
 <h2 class="anchored">
 Results
 </h2>
-<p>To determine the optimal number of clusters, k-means clustering was implemented for different values of the cluster count k from k=2 to k=20. Shown in Figure 3 is the variation in the values of the different internal validation measures as the cluster count k is increased. The silhouette coefficient is monotonically increasing as the number of clusters is increased, suggesting increasing separation of the clusters. However, to keep the clustering parsimonious, the SSE elbow method was used instead to determine the optimal value of k. Plotted below are the values of the internal validation criteria for values of 𝑘 between 2 and 20. Using the elbow method, 𝑘=10 is a good candidate for the number of clusters.</p>
+<p>To determine the optimal number of clusters, k-means clustering was implemented for different values of the cluster count k from <code>k=2</code> to <code>k=20</code>. Shown in Figure 3 is the variation in the values of the different internal validation measures as the cluster count k is increased. The silhouette coefficient is monotonically increasing as the number of clusters is increased, suggesting increasing separation of the clusters. However, to keep the clustering parsimonious, the SSE elbow method was used instead to determine the optimal value of k. Plotted below are the values of the internal validation criteria for values of 𝑘 between 2 and 20. Using the elbow method, <code>k=10</code> is a good candidate for the number of clusters.</p>
 <div class="column-page">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -465,7 +465,7 @@ Police and Weather Clusters
 <div class="column-page">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="source/rappler_legislative.png" class="img-fluid figure-img"></p>
+<p><img src="source/rappler_pnp.png" class="img-fluid figure-img"></p>
 <p></p><figcaption class="figure-caption">FIGURE 10: (left) Wordcloud and (right) top words in the Police article cluster</figcaption><p></p>
 </figure>
 </div>
@@ -473,7 +473,7 @@ Police and Weather Clusters
 <div class="column-page">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="source/rappler_legislative.png" class="img-fluid figure-img"></p>
+<p><img src="source/rappler_weather.png" class="img-fluid figure-img"></p>
 <p></p><figcaption class="figure-caption">FIGURE 11: (left) Wordcloud and (right) top words in the Weather article cluster</figcaption><p></p>
 </figure>
 </div>
@@ -543,7 +543,7 @@ Recommendations
 <h2 class="anchored">
 References
 </h2>
-<p><i> 1. <a href="https://www.rappler.com/nation/197230-duterte-rappler-ban-twisted-reporting">Duterte says he banned Rappler due to ‘twisted’ reporting</a> 2. <a href="https://www.rappler.com/nation/193806-duterte-fake-news-outlet">Duterte calls Rappler ’fake news outlet”</a> 3. <a href="https://towardsdatascience.com/all-the-news-17fa34b52b9d">All the news:Clustering 143,000 articles with KMeans</a> 4. <a href="https://seangtkelley.me/blog/2018/01/03/news-article-clustering">Story Discovery using K-Means Clustering on news articles</a> 5. <a href="https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py">Clustering text documents using k-means</a> 6. <a href="http://www.scholarpedia.org/article/Latent_semantic_analysis">Latent semantic analysis</a> </i></p>
+<p><i> 1. <a href="https://www.rappler.com/nation/197230-duterte-rappler-ban-twisted-reporting">Duterte says he banned Rappler due to ‘twisted’ reporting</a><br> 2. <a href="https://www.rappler.com/nation/193806-duterte-fake-news-outlet">Duterte calls Rappler ’fake news outlet”</a><br> 3. <a href="https://towardsdatascience.com/all-the-news-17fa34b52b9d">All the news:Clustering 143,000 articles with KMeans</a><br> 4. <a href="https://seangtkelley.me/blog/2018/01/03/news-article-clustering">Story Discovery using K-Means Clustering on news articles</a><br> 5. <a href="https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py">Clustering text documents using k-means</a><br> 6. <a href="http://www.scholarpedia.org/article/Latent_semantic_analysis">Latent semantic analysis</a> </i></p>
 
 
 
