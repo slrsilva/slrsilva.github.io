@@ -26,7 +26,7 @@ draft: false # setting this to `true` will prevent your post from appearing on y
 
 Original creation and submission for this notebook was last July 2019. 
 
-This was a final project for the Data Mining & Wrangling course. In this final project, we were tasked to create an end-to-end project - from project proposal, data colletion & wranling, model building, and presentation of results and insights. For this project, articles from the [Rappler Website](https://www.rappler.com/) were analyzed to see if there were underlying themes in the website's article portfolio. Below is the detailed technical paper with an attached executive summary
+This was a final project for the Data Mining & Wrangling course. In this final project, we were tasked to create an end-to-end project - from project proposal, data colletion & wranling, model building, and presentation of results and insights. For this project, articles from the [Rappler Website](https://www.rappler.com/) were analyzed to see if there were underlying themes in the website's article portfolio. Below is the detailed technical paper with an attached executive summary.
 </div>
 
 <h2>Acknowledgements</h2>
