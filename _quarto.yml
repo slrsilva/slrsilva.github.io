@@ -24,10 +24,9 @@ website:
         href: https://twitter.com
 format:
   html:
-    theme: journal
-    css: custom-styles.scss
-    include-in-header: html/google.html
-    include-before-body: html/google.html
+    theme: 
+      - default
+      # - custom.scss
 
 
 
