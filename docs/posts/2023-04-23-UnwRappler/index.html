@@ -375,9 +375,9 @@ Unsupervised Clustering
 <li>minimizing the sum of square distance to centroids coefficient</li>
 </ol>
 <p>The next section will discuss the resulting article clusters and the optimal number of cluster counts.</p>
-<h3 class="anchored">
+<h2 class="anchored">
 Results
-</h3>
+</h2>
 <p>To determine the optimal number of clusters, k-means clustering was implemented for different values of the cluster count k from k=2 to k=20. Shown in Figure 3 is the variation in the values of the different internal validation measures as the cluster count k is increased. The silhouette coefficient is monotonically increasing as the number of clusters is increased, suggesting increasing separation of the clusters. However, to keep the clustering parsimonious, the SSE elbow method was used instead to determine the optimal value of k. Plotted below are the values of the internal validation criteria for values of 𝑘 between 2 and 20. Using the elbow method, 𝑘=10 is a good candidate for the number of clusters.</p>
 <div class="column-page">
 <div class="quarto-figure quarto-figure-center">
@@ -421,9 +421,9 @@ Cluster Themes at <code>k=10</code>
 </figure>
 </div>
 </div>
-<h3 class="anchored">
+<h2 class="anchored">
 Insights
-</h3>
+</h2>
 <p>The application of the unsupervised clustering technique on a corpus of 11, 079 news articles shows consistency of topic clusters across different resolutions that include:</p>
 <h4 class="anchored">
 Duterte Article Cluster
@@ -508,7 +508,7 @@ Time-Specific Article Clusters
 </div>
 <p>The remaining themes are time-related and reflect major events during the timeframe selected (January 2019 to May 2019), such as the 2019 Philippine Midterm Elections, Boracay Island Rehabilitation (April 2018-October 2018), and the Dengvaxia (dengue vaccine) controversy.</p>
 <h4 class="anchored">
-Sensitivity Analysiss
+Sensitivity Analysis
 </h4>
 <p>While it was concluded that 10 is the optimal number of groupings for the subject dataset, sensitivity analysis has been performed to test the robustness of the results gathered. Shown below are the resulting article clusters for <code>k=6</code> and <code>k=16</code>. It is noted that as the cluster count is increased, the most affected clusters are bigger ones, especially the Duterte cluster. As such, it can be deduced that said cluster has many subclusters which are differentiated when cluster count is increased. Nevertheless, the core clusters (e.g., General News, Duterte, 2019 Election, Police) created regardless of the number of clusters are constant.</p>
 <div class="column-page">
@@ -543,14 +543,7 @@ Recommendations
 <h2 class="anchored">
 References
 </h2>
-<ol type="1">
-<li><a href="https://www.rappler.com/nation/197230-duterte-rappler-ban-twisted-reporting">Duterte says he banned Rappler due to ‘twisted’ reporting</a></li>
-<li><a href="https://www.rappler.com/nation/193806-duterte-fake-news-outlet">Duterte calls Rappler ’fake news outlet”</a></li>
-<li><a href="https://towardsdatascience.com/all-the-news-17fa34b52b9d">All the news:Clustering 143,000 articles with KMeans</a></li>
-<li><a href="https://seangtkelley.me/blog/2018/01/03/news-article-clustering">Story Discovery using K-Means Clustering on news articles</a></li>
-<li><a href="https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py">Clustering text documents using k-means</a></li>
-<li><a href="http://www.scholarpedia.org/article/Latent_semantic_analysis">Latent semantic analysis</a></li>
-</ol>
+<p><i> 1. <a href="https://www.rappler.com/nation/197230-duterte-rappler-ban-twisted-reporting">Duterte says he banned Rappler due to ‘twisted’ reporting</a> 2. <a href="https://www.rappler.com/nation/193806-duterte-fake-news-outlet">Duterte calls Rappler ’fake news outlet”</a> 3. <a href="https://towardsdatascience.com/all-the-news-17fa34b52b9d">All the news:Clustering 143,000 articles with KMeans</a> 4. <a href="https://seangtkelley.me/blog/2018/01/03/news-article-clustering">Story Discovery using K-Means Clustering on news articles</a> 5. <a href="https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py">Clustering text documents using k-means</a> 6. <a href="http://www.scholarpedia.org/article/Latent_semantic_analysis">Latent semantic analysis</a> </i></p>
 
 
 
