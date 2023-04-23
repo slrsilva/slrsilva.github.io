@@ -1,0 +1,11 @@
+{
+  "hash": "94f10bd4887b1ca68ac22f058d1961d3",
+  "result": {
+    "markdown": "---\ntitle: UnwRappler\ndescription: Revealing Rappler’s underlying focus\ndate: '2022-04-23'\ndate-format: 'MMM D, YYYY'\ncategories:\n  - python\n  - unsupervised-learning\n  - clustering\n  - news\n  - rappler\n  - analysis\nimage: post-thumbnail.png\nformat:\n  html:\n    code-fold: true\neditor:\n  render-on-save: true\ndraft: false\n---\n\n![](thumbnail.png)\n\n<h1>About</h1>\n<div class='executive-summary'>\n\nOriginal creation and submission for this notebook was last July 2019. \n\nThis was a final project for the Data Mining & Wrangling course. In this final project, we were tasked to create an end-to-end project - from project proposal, data colletion & wranling, model building, and presentation of results and insights. For this project, articles from the [Rappler Website](https://www.rappler.com/) were analyzed to see if there were underlying themes in the website's article portfolio. Below is the detailed technical paper with an attached executive summary\n</div>\n\n<h2>Acknowledgements</h2>\n\nThis analysis was done together with my groupmates George Esleta, Carmelita Esclanda, and Elmer Robles.\n\n<h2>Technical Paper</h2>\n\n:::\n<iframe\n    width='1000'\n    height='1000'\n    src=\"source/DMW - LT01 - Tech Paper.pdf\">\n</iframe>\n\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

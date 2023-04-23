@@ -21,7 +21,7 @@ website:
   favicon: "images/profile.png"
 ---
 
-:::{#hero-heading}
+<!-- :::{#hero-heading} -->
 
 <h2> Hello, World! </h2>
 <p class='aboutme'>
@@ -69,6 +69,5 @@ My career has been focused on solving complex multidisciplinary problems, and I 
 <strong> Market Analyst</strong><br>
 <p class='company'>Aboitiz Power Corporation</p>
 
-:::
 
 

@@ -1,5 +1,5 @@
 <iframe
-    width='1000'
-    height='1000'
+    width='900'
+    height='900'
     src="documents/Sandro_Silva_Resume_202304.pdf">
 </iframe>

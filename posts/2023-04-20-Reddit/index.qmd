@@ -1,7 +1,7 @@
 ---
 title: "Unraveling Subreddits"
 description: "Identifying underlying themes in Reddit titles using non-supervised clustering "
-date: 2022-04-23
+date: 2022-04-22
 categories: [python, unsupervised-learning, clustering, reddit, analysis]
 image: thumbnail.jpeg
 # include-in-header: animation.html
