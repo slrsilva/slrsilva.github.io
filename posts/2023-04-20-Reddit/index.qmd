@@ -1,7 +1,7 @@
 ---
 title: "Unraveling Subreddits"
 description: "Identifying underlying themes in Reddit titles using non-supervised clustering "
-date: 2022-04-20
+date: 2022-04-23
 categories: [python, EDA, SQL, analysis]
 image: thumbnail.jpeg
 # include-in-header: animation.html
@@ -18,7 +18,7 @@ draft: true # setting this to `true` will prevent your post from appearing on yo
 
 ---
 
-<!-- ![](thumbnail.jpeg) -->
+![](thumbnail.jpeg)
 
 <h1>Executive Summary</h1>
 <div class='executive-summary'>
@@ -38,9 +38,8 @@ This analysis was done together with my Lab partner, George Esleta, and Cohortma
 
 <h2> B. Methodology</h2>
 
-Reddit titles and authors were scraped from the [Reddit](https://www.reddit.com/) website and stored in a text file. The file is tab-delimited and has two columns: author and title.
+Reddit titles and authors were scraped from the [Reddit](https://www.reddit.com/) website and stored in a text file. The file is tab-delimited and has two columns: author and title. Flow of this notebook is as follows:
 
-The general workflow for clustering the Reddit titles involves the following steps:
 <ol>
 <li> Pre-requisites: Load Requirement Package
 <li> Reading the Reddit data
@@ -76,6 +75,7 @@ from sklearn.metrics import calinski_harabaz_score, silhouette_score
 from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import Normalizer
+    from sklearn.metrics import confusion_matrix
 
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
@@ -108,434 +108,790 @@ function code_toggle() {
 $( document ).ready(code_toggle);
 </script>
 <form action="javascript:code_toggle()"><input type="submit" value="Click here to toggle on/off the raw code."></form>''')
-
-Additionally, we should create a sqlite3 database for where we will store the data what we will scrape. For that, we shall use the `sqlite3` python module.
-
-```{python}
-# | eval: false
-# | code-summary: Import the SQLite3 moule then create an empty database called chessgames.
-import sqlite3
-conn = sqlite3.connect('chessgames.db')
 ```
 
-Next, since we will be doing some web scraping, which may want to set our proxy and headers. A proxy server can help a scraper avoid IP address blocking, access geographically restricted content, facilitate high-volume scraping, and avoid detection. Headers in web scraping are a part of the HTTP request that provides information about the client making the request. They are important because they can affect the response received from the server. Some websites may block or restrict access to content based on the header information. To avoid being detected as a bot or being blocked by the server, it is important to ensure that the headers used in web scraping are appropriate and mimic those of a real user.
+<h3>Reading the Reddit data</h3>
+
+
+The data was stored in the ACCESS lab cloud computer (JOJIE). So for this instance, the sample Reddit text file was read using the `read_csv` function of `pandas`. In reading the file, tab (`\t`) separator was used, and the first line was skipped.
 
 ```{python}
 # | eval: false
-# | code-summary: Edit our Proxy and Heading
-# Setting of proxy
-os.environ['HTTP_PROXY'] = 'http://13.115.147.132:8080'
-os.environ['HTTPS_PROXY'] = 'http://13.115.147.132:8080'
-
-# Setting of header
-header = {'''accept: text/html,application/xhtml+xml,application/xml;q=0.9,
-            image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3
-            accept-Encoding: gzip, deflate
-            accept-Language: en-US,en;q=0.9
-            cache-Control: max-age=0
-            connection: keep-alive
-            host: www.chessgames.com
-            referer: http://www.chessgames.com/perl/chess.pl?page=16&pid=14125
-            &playercomp=either&year=2010&yearcomp=ge
-            upgrade-Insecure-Requests: 1
-            user-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 
-            (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'''}
+# | code-summary: Load Reddit data
+df = pd.read_csv('reddit-dmw-sample.txt', sep='\t', skiprows=1, header=None, 
+                 usecols = [1, 2], 
+                 names = ['author', 'title'],)
 ```
 
-<h3>Step 1: Understand the Data and Conduct Web Scraping Tool</h3>
+The resulting dataframe has two columns: `author` and `title`. A sample of the Reddit topics are shown below.
 
-To analyze the top opening moves of the highest-rated chess players, web data extraction was performed on the pages of [ChessGames.com](ChessGames.com). We focused on two entities, namely the chess players (`players`) and their games (`games`). Data for both entities were saved to an SQLlite database (`chessgames.db`). 
+| author        | title                                           |
+|---------------|-------------------------------------------------|
+| PrimotechInc  | 7 Interesting Hidden Features of apple ios9      |
+| xvagabondx    | Need an advice on gaming laptop                 |
+| nkindustries  | Semi automatic ROPP Capping machine / ROPP Cap...|
+| Philo1927     | Microsoft Plumbs Ocean’s Depths to Test Underw...|
+| tuyetnt171    | OPPO F1 chính hãng - Fptshop.com.vn              |
+: Tale 1: Sample Reddits from the Data
 
-The `players` table was obtained by scraping all web pages under the Chess Players Directory [http://www.chessgames.com/directory/](http://www.chessgames.com/directory/). Each page in this directory corresponds to a letter of the alphabet (e.g.,  [http://www.chessgames.com/directory/A](http://www.chessgames.com/directory/A). Each player has the following information:
+<h3> Initial data cleaning </h3>
 
-<center> Table 1: `player` table fields </center>
-| Field       | Description                   | Long Description                        | Data Type |
-|-------------|-------------------------------|-----------------------------------------|-----------|
-| pid         | Player ID                     | indentification number                  | integer   |
-| lname       | Last Name                     | player's last name                      | varchar   |
-| fname       | First Name                    | player's first name                     | varchar   |
-| rating      | Rating                        | highest rating achieved in the database | integer   |
-| start_year  | Start Year                    | player's starting year                  | integer   |
-| end_year    | End Year                      | player's ending year                    | integer   |
-| game_count  | Number of games               | number of games in database             | integer   |
+Once the Reddit data is stored in a dataframe, initial data cleaning was performed by converting all titles to lowercase, and removing leading and trailing spaces. Duplicate titles were also dropped. 
 
-The `get_player_info` method was used to scrape the player information (seen below).
+The unique titles are then stored in a list:
 
 ```{python}
 # | eval: false
-# | code-summary: Function description for get_player_info()
-def get_player_info(url):
-    '''
-    Scrapes player info from the specified URL.
+# | code-summary: Viewing the unique titles
+df['title'] = df['title'].str.lower()
+df['title'] = df['title'].str.strip()
+docs = list(df.title.unique())
+pp.pprint('Number of titles: ' + str(len(docs)))
+```
 
-    Parameter
-    ---------
-    URL : URL of player page
+```
+'Number of titles: 5848'
+```
 
-    Return
-    ------
-    list of tuples (pid, lname, fname, rating, start_year, end_year, 
-    game_count)
-    '''
-    players_list = []
-    resp = requests.get(url, headers=headers)
-    time.sleep(1)
-    print("\tStatus code: ", resp.status_code)
-    resp_soup = BeautifulSoup(resp.text, 'lxml')
-    players = resp_soup.select('tr[bgcolor="#FFFFFF"],tr[bgcolor="#FFEEDD"]')
-    for player in players:
-        data = player.select('td')
-        rating = data[0].text.strip()
-        name = data[2].text.split(',')
-        if len(name) == 2:
-            fname = name[1].strip()
+After removing duplicates, there are 5848 unique Reddit titles in the sample dataset.
+
+Sample cleaned topics are shown below. Note that there still are punctuation marks and special characters. These will be removed during vectorization.
+
+```
+[   '7 interesting hidden features of apple ios9',
+    'need an advice on gaming laptop',
+    'semi automatic ropp capping machine / ropp cap sealing machine',
+    'microsoft plumbs ocean’s depths to test underwater data center',
+    'oppo f1 chính hãng - fptshop.com.vn',
+    'stewed ramps w/ fixings in helvatia, wv',
+    '(california) is it a crime when a religious figure/ lecturer has '
+    'relations with one of his followers',
+    'being accused of public indecency, among other things. this is a '
+    'misunderstanding because i had health issues. [kansas, usa]',
+    '[us-ca/nv] my parents have been separated for almost 20 years, my mom '
+    'found out my dad divorced her without her knowledge a few years ago when '
+    'i was about 14--can she claim backdated child support?',
+    'skyrim ps4?']
+```
+
+<h3> Exploratory Data Analysis </h3>
+
+Shown below are the top 15 most used words in the Reddit sample data. Note that the most common word is "TIL" (Today I Learned), followed by the names of prominent US politicians such as US President Donald Trump, 2016 presidential candidate Hillary Clinton, and Senator Bernie Sanders. All three of them figured prominently in the 2016 U.S. presidential elections, with Trump as the presidential nominee under the Republican party, while Clinton and Sanders as the Democratic party presidential candidates. Initial analysis of the data reveal that the **2016 U.S. Presidential Election is one of the primary themes in the sample Reddit data**. 
+
+```{python}
+# | eval: false
+# | code-summary: Viewing the unique titles
+mask = np.array(Image.open('Icon-Reddit1.png'))
+tokenizer = RegexpTokenizer(r'\w{2,}')
+word_tokens = tokenizer.tokenize(' '.join(docs))
+stopword = set(stopwords.words('english') + list(stop_words.ENGLISH_STOP_WORDS))
+docs_filtered = [w for w in word_tokens if not w in stopword] 
+counts = FreqDist(docs_filtered)
+labels, values = zip(*counts.items())
+indSort = np.argsort(values)[::]
+labels = np.array(labels)[indSort[-15:]]
+values = np.array(values)[indSort[-15:]]
+indexes = np.arange(len(labels))
+bar_width = 0.35
+
+fig, ax = plt.subplots(1, 2, dpi=100, figsize = (10,4))
+ax[0].barh(indexes, values, color='#ff4500')
+ax[0].set_xlabel('Word count')
+ax[0].set_title('Most common words in the Reddit sample data')
+ax[0].set_yticks(indexes + bar_width);
+ax[0].set_yticklabels(labels);
+
+wordcloud = WordCloud(background_color="white", max_words=100, min_font_size=8, mask=mask, 
+                      prefer_horizontal=0.6, colormap='copper', relative_scaling=.5).generate(' '.join(docs_filtered))
+
+ax[1].imshow(wordcloud, interpolation='bilinear')
+ax[1].axis('off');
+```
+
+![FIGURE 1: (1) Frequency distribution of the top 15 words in the Reddit sample data, and (b) the corresponding wordcloud. Top words include TIL (Today I learned) and the names of 2016 US Presidential Aspirants (Donald Trump, Bernie Sanders, Hillary Clinton) ](image-outputs/1-TILoutput.png){width=100%}
+
+<h3> Vectorization/Bag-of-words representation </h3>
+
+To uncover the other underlying themes apart from the 2016 U.S. Presidential Election, unsupervised clustering via k-means is performed on the collection of Reddit titles. To do this, the topics need to be *vectorized* or be converted to their bag-of-words representation. The `TfidfVectorizer` vectorizer was used to perform the vectorization. 
+
+The `TFidfVectorizer` also performs further cleaning of the data by removing both frequent words and rare words. *Stopwords*, or words that appear too frequently in the English language (e.g., the, a, an, and, or), were dropped from the corpus. Reddit-specific stopwords, or words that appear in more than 70% of the titles, were also ignored by setting the `max_df` parameter of `TFidfVectorizer` to $0.7$.
+
+Rare words, or words that appeared in less than 0.1% of the Reddit titles, were also excluded from the corpus. This was implemented by setting the `min_df` parameter of the `TFidfVectorizer` to $0.001$.
+
+*n*-grams of word lengths between $n=1$ and $n=3$ were extracted as part of the vocabulary. This range of n-grams was chosen in order to preserve the context of certain phrases such as "Hillary Clinton" ($n=2$), "Donald Trump" ($n=2$), and "Happy new year" ($n=3$) 
+
+```{python}
+# | eval: false
+# | code-summary: Using a TFIDF Vectorizer
+
+# Creating a TF-IDF Vectorizer
+tfidf_vectorizer = TfidfVectorizer(token_pattern=r'(?u)\b\w(?:\w|\-)+\b', 
+                                   stop_words=stopword, 
+                                   ngram_range=(1,3), min_df=0.001, max_df=0.7)
+
+# Creating a Bag-Of-Words
+bow = tfidf_vectorizer.fit_transform(docs)
+
+# Identifying the vocabulary
+vocabulary = tfidf_vectorizer.get_feature_names()
+```
+
+After vectorization, the sample of Reddit titles has **1,655 unique items** in its vocabulary:
+
+Sample vocabulary items are shown below:
+
+```
+[   'years old',
+    'yesterday',
+    'york',
+    'york times',
+    'young',
+    'youtube',
+    'zealand',
+    'zelda',
+    'ăn',
+    'طريقة']
+```
+
+<h3> Dimensionality reduction using Latent Semantics Analysis (LSA) </h3>
+
+The resulting bag of words is a 5848 by 1655 matrix:
+
+```
+print("\t Dimensions: ", bow.shape)
+Dimensions:  (5848, 1655)
+```
+
+
+It would be computationally expensive to perform clustering on a dataset this large. To minimize computational power,  dimensionality reduction was performed on the vectorized data via **latent semantic analysis (LSA)**. This was implemented using the `TruncatedSVD` class of `sklearn`.
+
+As a general rule for LSA, fewer dimensions allow for broader comparisons of the themes contained in a collection of text, while a higher number of dimensions enable more specific comparisons of themes. A dimesionality between 50 and 1,000 are suitable depending on the size and nature of the document collection, with $300 \pm 50$ the optimum value. Unlike in other dimensionality reduction techniques such as principal component analysis (PCA), checking the proportion of variance retained to determine the optimal dimensionality is **NOT** applicable to LSA. 
+
+In this study, $n_{components} = 100$ is used to extract the underlying themes.
+
+<h4> Reduced dimensionality</h4>
+
+For the purposes of this study, we reduced the dimensionality of the Reddit sample data to **100 components**. The transformed Reddit dataset is shown below. Numerous subclusters are revealed, confirming that there are multiple categories or themes in the dataset. 
+
+```{python}
+# | eval: false
+# | code-summary: Using a TruncatedSVD to reduce the number of components to 100 components, then getting bag of words, the using TSNE
+tsvd1 = TruncatedSVD(n_components=100)
+normalizer = Normalizer(copy=False)
+lsa1 = make_pipeline(tsvd1, normalizer)
+
+# Getting the bag of words
+bow_tsvd1 = lsa1.fit_transform(bow)
+
+# Applying a TSNE model
+tsne = TSNE(n_components=2, random_state=1704, n_iter=1500, n_iter_without_progress=500, perplexity=50, learning_rate=10)
+bow_tsne1 = tsne.fit_transform(bow_tsvd1)
+```
+
+Now, let's make a graph on the TSNE model's bag of words. Below you'll see it flatted TSNE of the bag of words.
+```{python}
+# | eval: false
+# | code-summary: Creating the plot of the TSNE.
+fig, ax = plt.subplots(dpi = 100)
+ax.scatter(bow_tsne1[:,0], bow_tsne1[:,1], alpha=0.5, label=True, marker='o', s=8, c="#ff4500");
+```
+
+![FIGURE 2: Reddit topics visualized in two dimensions using TSNE. ](image-outputs/2-TSNE.png){width=100%}
+
+<h3>Representative-based clustering using *k*-means </h3>
+<h4>1. Selecting the optimal number of clusters `k` </h4>
+
+To determine the optimal number of clusters, we perform k-means clustering for different values of the cluster count $k$ from $k=2$ to $k=20$. This range of values was chosen to keep the clustering parsimonious.  
+
+Several internal validation measures were computed for each value of $k$. The internal validation measures that were used are (a) intracluster to intercluster distance ratio, (b) Calinski-Harabasz score (c) Silhouette coefficient, and (d) sum of square distances to centroids coefficient. 
+
+The optimal value of $k$ is then chosen based on the following criteria:
+
+1. Sum-of-square distance to centroid is minimized
+2. Calinski-Harabasz index is maximized
+3. Intracluster to intercluster distance ratio is minimized
+4. Silhouette coefficient is maximized
+
+Plotted below are the values of the internal validation criteria for values of $k$ between 2 and 20. **$k = 10$** and **$k = 16$** are good candidates for the number of clusters because for these values, the intracluster to intercluster distance ratio has a local minima, and the silhouette coefficient has a relatively high value. 
+
+
+
+```{python}
+# | eval: false
+# | code-summary: Function for computing intracluster to intercluster distance ratio
+def intra_to_inter(X, y, dist, r):
+    """
+    Compute intracluster to intercluster distance ratio
+    
+    Parameters
+    ----------
+    X : array
+        Design matrix with each row corresponding to a point
+    y : array
+        Class label of each point
+    dist : callable
+        Distance between two points. It should accept two arrays, each 
+        corresponding to the coordinates of each point
+    r : integer
+        Number of pairs to sample
+        
+    Returns
+    -------
+    ratio : float
+        Intracluster to intercluster distance ratio
+    """
+    P = []
+    Q = []
+    p=0
+    q=0
+    np.random.seed(11)
+    d = np.random.choice(range(0,len(X)), (r,2), replace=True)
+    for a in range(0,len(d)):
+        if  d[a][0] == d[a][1]:
+            continue
+        elif y[d[a][0]] == y[d[a][1]]:
+            P.append(dist(X[d[a][0]],X[d[a][1]]))
+            p+=1
         else:
-            fname = None
-        lname = name[0].strip()
-        years = data[3].text.strip()
-        game_count = data[4].text.strip()
-        start_year = re.match('(\d{4})?-?(\d{4})', years).group(1)
-        end_year = re.match('(\d{4})?-?(\d{4})', years).group(2)
+            Q.append(dist(X[d[a][0]],X[d[a][1]]))
+            q+=1
+    if len(P) == 0 or len(Q) == 0:
+        ratio = 0
+    else:
+        ratio = (np.sum(P)/len(P))/(np.sum(Q)/len(Q))
+    return ratio
 
-        url = str(player.select('a')[-1])
-        pid = re.match('.*?pid=(\d+)', url).group(1)
 
-        tup = (pid, lname, fname, rating, start_year, end_year, game_count)
-        print('\t', tup)
-        players_list.append(tup)
-    return players_list
 ```
-For the `get_player_info` function, the `Requests` module is a Python library used for making HTTP requests. We can use basic methods such as the `GET`, `POST`, `PUT`, `DELETE`, and others. The module also provides support for handling cookies, adding custom headers, and handling redirects. We also used the `BeautifulSoup` Python library, which is a typical package in parsing HTML and XML documents. The package parses the pased HTML source code into a parsed tree, which can be easily traversed. Finally, we used the `re` Python package to utilize `Regular Expression` for easier string matching.
 
-<br>
-Next, the players data are then inserted to the `players` table using the `insert_players` method:
 
 ```{python}
 # | eval: false
-# | code-summary: Function description for insert_players()
-def insert_players(conn):
-    '''
-    Inserts players into the players table
-
-    Parameter
-    ---------
-    conn : sqlite connection
-    '''
-    cur = conn.cursor()
-    for char in string.ascii_uppercase:
-        url = "http://www.chessgames.com/directory/" + char + ".html"
-        print(url)
-        players = get_player_info(url)
-        cur.executemany('''INSERT INTO players 
-                            VALUES (?, ?, ?, ?, ?, ?, ?);''', players)
-        conn.commit()
-```
-
-Here, we access the enter the created database, then Insert the players and associated metadata into the database.
-
-<br>
-Next, this study will focus on the games of the thirty (30) highest-rated players. The ranking was based on the rating provided by the website. To extract the games of these players, we first obtained their player IDs (`pid`) by using the `pandas` method `read_sql`. Here we can pass a `SQL` statement:
-
-```{python}
-# | eval: false
-# | code-summary: Method to query the database
-df_players = pd.read_sql("""SELECT pid, fname || ' ' || lname, rating, 
-                                    game_count 
-                            FROM players
-                            WHERE rating != ''
-                            ORDER BY rating DESC""", conn)
-df_players.columns = ['Player ID', 'Name', 'Rating', 'Number of Games']
-df_players.head(30)
-```
-
-|    Player ID |                     Name | Rating | Number of Games |
-|-------------:|----------------|-------:|----------------:|
-|        52948 |           Magnus CARLSEN |   2882 |           3,016 |
-|        15940 |           Garry KASPAROV |   2851 |           2,385 |
-|        76172 |         Fabiano CARUANA |   2844 |           1,891 |
-|        17316 |           Levon ARONIAN |   2830 |           2,708 |
-|        95915 |                 Wesley SO |   2822 |           1,400 |
-|        56798 | Maxime VACHIER-LAGRAVE |   2819 |           2,369 |
-|        12088 |         Viswanathan ANAND |   2817 |           3,542 |
-|        12295 |        Vladimir KRAMNIK |   2817 |           3,026 |
-|        12089 |           Veselin TOPALOV |   2816 |           2,278 |
-|        50065 |   Shakhriyar MAMEDYAROV |   2814 |           2,254 |
-|        10084 |          Hikaru NAKAMURA |   2814 |           2,424 |
-|        17279 |      Alexander GRISCHUK |   2797 |           2,586 |
-|        52629 |               Ding LIREN |   2797 |             920 |
-|       107252 |              Anish GIRI |   2793 |           1,522 |
-|        49796 |         Teimour RADJABOV |   2793 |           1,746 |
-|        54535 |         Sergey KARJAKIN |   2788 |           2,399 |
-|        11719 |  Alexander MOROZEVICH |   2788 |           1,847 |
-|        12183 |         Vassily IVANCHUK |   2787 |           3,752 |
-|        19233 |      Robert James FISCHER |   2785 |           1,052 |
-|        20719 |           Anatoly KARPOV |   2780 |           3,609 |
-|        13847 |            Boris GELFAND |   2777 |           3,014 |
-|        79968 |            Peter SVIDLER |   2769 |           2,786 |
-|        49080 |  Leinier Dominguez PEREZ |   2768 |           1,342 |
-|        12109 |         Ruslan PONOMARIOV |   2768 |           1,989 |
-|        54683 |      Ian NEPOMNIACHTCHI |   2767 |           1,614 |
-|        49246 |     Pentala HARIKRISHNA |   2766 |           1,442 |
-|        49456 |            Pavel ELJANOV |   2765 |           1,409 |
-|        15874 |               Gata KAMSKY |   2763 |           1,889 |
-|        12290 |                Peter LEKO |   2763 |           2,364 |
-|       112240 |                Yu YANGYI |   2762 |             991 |
-: Table 2: Top 30 chess players based on Rating
-
-The `games` table was then populated by web scraping <small>`http://www.chessgames.com/perl/chessplayer?pid=<pid>`</small> and iterating over the top 30 player IDs. The following fields were extracted for each game:
-
-
-| Field         | Description        | Data Type |
-|---------------|--------------------|-----------|
-| gid           | Game ID            | integer   |
-| white_pid     | White Player ID    | int       |
-| black_pid     | Black Player ID    | int       |
-| result        | Result             | varchar   |
-| moves         | Number of moves    | integer   |
-| year          | Year               | integer   |
-| tournament    | Tournament Name    | varchar   |
-| eco           | Encyclopaedia of Chess Openings  | varchar   |
-| opening_move  | Opening move       | varchar   |
-: Table 3: `games` table fields 
-
-The `get_players_games` function was implemented to scrape the game data for a given Player ID `pid` and page number `page_start`. This writes the games data of the player to a CSV file (`<pid>.csv`):
-
-```{python}
-# | eval: false
-# | code-summary: Function description for the get_players_games()
-def get_player_games(pid, page_start):
+# | code-summary:  Function to create the clusters, cluster labels (and scores of internal validation values)
+def cluster_range(X, clusterer, k_start=2, k_stop=16, actual=None):
     """
-    Web scrapes the games list for a player and writes it to a CSV 
+    Accepts the design matrix, the clustering object, the initial and final 
+    values to step through, and, optionally, actual labels. It should return a
+    dictionary of the cluster labels, internal validation values and, if
+    actual labels is given, external validation values, for every k.
 
-    Parameters:
-    -----------
-    pid : player ID
-    page_start : starting page
+    Parameters
+    ----------
+    X : design matrix
+    clusterer : clustering object
+    k_start : initial value of clusters
+    k_stop : final value of clusters
+    actual : actual labels
 
-    Returns:
-    --------
-    None
+    Returns
+    -------
+    dictionary
     """
-    url = 'http://www.chessgames.com/perl/chessplayer?pid=' + str(pid)
-    resp = requests.get(url, headers=headers)
-    print('pid = ', pid, '\turl = ', url, '\tcode = ', resp.status_code)
-    time.sleep(np.random.randint(1, 2))
-    soup = BeautifulSoup(resp.text, 'lxml')
-    div_page_count = soup.select(
-        'td[background$="/chessimages/table_stripes.gif"]')
-    page_count = int(re.findall('of (\d+)\;', div_page_count[0].text)[0])
 
-    with open(f'{pid}.csv', 'a') as file:
-        csv_writer = csv.writer(file, delimiter=',', quotechar='"')
-        for page in range(page_start, page_count+1):
-            page_url = 'http://www.chessgames.com/perl/chess.pl?page=' + \
-                str(page) + '&pid=' + str(pid)
-            page_resp = requests.get(page_url, headers=headers)
-            print('\tpage = ', page, '\turl = ', page_url,
-                  '\tcode = ', page_resp.status_code)
-            time.sleep(np.random.randint(1, 2))
-            page_soup = BeautifulSoup(page_resp.text, 'lxml')
-            games = page_soup.select(
-                'tr[bgcolor="#FFFFFF"],tr[bgcolor="#EEDDCC"]')
 
-            for game in games:
-                data = game.select('td')
-                game_url = data[0].find("a")['href']
-                game_id = re.findall('(\d+)', game_url)[0]
-                result = data[2].text.strip()
-                moves = data[3].text.strip()
-                year = data[4].text.strip()
-                tournament = data[5].text.strip()
-                eco = data[6].select('a')[0].text.strip()
-                opening_move = re.findall(
-                    '^[A-E0-9][0-9]{2} (.*)', data[6].text.strip())[0]
-
-                game_resp = requests.get(
-                    'http://www.chessgames.com' + game_url, headers=headers)
-                time.sleep(np.random.randint(1, 2))
-                game_soup = BeautifulSoup(game_resp.text, 'lxml')
-                players = game_soup.select('center')[0].select('a')
-                try:
-                    white_id = re.findall('(\d+)', players[0]['href'])[0]
-                except:
-                    white_id = None
-                try:
-                    black_id = re.findall('(\d+)', players[1]['href'])[0]
-                except:
-                    black_id = None
-                tup = (game_id, white_id, black_id, result,
-                       moves, year, tournament, eco, opening_move)
-
-                try:
-                    csv_writer.writerow(tup)
-                except:
-                    print('\t\tgameID: ', game_id, '\tWrite to CSV failed')
+    validation_dict = {"chs": [],
+                       "iidrs": [],
+                       "inertias": [],
+                       "scs": [],
+                       "ys": []
+                       }
+    if actual is not None:
+        validation_dict = {"chs": [],
+                           "iidrs": [],
+                           "inertias": [],
+                           "scs": [],
+                           "ys": [],
+                           "amis": [],
+                           "ars": [],
+                           "ps": []
+                           }
+    for k in range(k_start, k_stop+1):
+        clusterer.n_clusters = k
+        np.random.seed(11)
+        y_predict = clusterer.fit_predict(X)
+        validation_dict["chs"].append(calinski_harabaz_score(X, y_predict))
+        validation_dict["iidrs"].append(
+            intra_to_inter(X, y_predict, euclidean, 50))
+        validation_dict["inertias"].append(clusterer.inertia_)
+        validation_dict["scs"].append(silhouette_score(X, y_predict))
+        validation_dict["ys"].append(y_predict)
+        if actual is not None:
+            validation_dict["amis"].append(
+                adjusted_mutual_info_score(actual, y_predict))
+            validation_dict["ars"].append(
+                adjusted_rand_score(actual, y_predict))
+            validation_dict["ps"].append(purity(actual, y_predict))
+    return validation_dict
 ```
 
-All player csv files were then inserted to the `games` table of the `chessgames.db` database using the `read_csvs` function:
+```
+kmeans_dict1 = cluster_range(
+    # bag of words results
+    bow_tsvd1, 
+    # using a k-means clusterer
+    KMeans(random_state=1704, n_init=20, max_iter=1000, tol=1e-6), 
+    2,
+    20)
+```
 
 ```{python}
 # | eval: false
-# | code-summary: Function description for read_csvs()
-def read_csvs(conn):
+# | code-summary:  Function to plot internal validation values
+def plot_internal(inertias, chs, iidrs, scs):
     """
-    Read all player csvs and save them to the games table
+    Plot internal validation values
     """
-    gid_failed = []
-    cur = conn.cursor()
-    for file_name in glob.glob('./games/*.csv'):
-        with open(file_name) as file:
-            print(file_name)
-            reader = csv.reader(file, delimiter = ',')
-            for line in reader:
-                try:
-                    cur.execute('''INSERT INTO games VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);''', line)
-                    print('\t\tgameID: ', line[0], '\tInsert success!')
-                except Exception as e:
-                    gid_failed.append(line[0])
-                    print('\t\tgameID: ', line[0], '\tInsert Failed!\t', e)
-    return gid_failed
+    fig, ax = plt.subplots(1,4,dpi=100, figsize=(10,2))
+    ks = np.arange(2, len(inertias)+2)
+    ax[0].plot(ks, inertias, '-o', label='SSE')
+    ax[1].plot(ks, chs, '-ro', label='CH')
+    ax[0].set_xlabel('$k$')
+    ax[1].set_xlabel('$k$')
+    ax[0].set_title('SSE')
+    ax[1].set_title('CH')
+    ax[2].plot(ks, iidrs, '-go', label='Inter-intra')
+    ax[3].plot(ks, scs, '-ko', label='Silhouette coefficient')
+    ax[2].set_xlabel('$k$')
+    ax[2].set_title('Inter-intra')
+    ax[3].set_xlabel('$k$')
+    ax[3].set_title('Silhouette coefficient')
+    return ax
 ```
-Now, let us examine the games dataframe by calling it with the `read_sql` Pandas module.
+
+Let's plot the interal validation values
+```
+plot_internal(kmeans_dict1['inertias'], kmeans_dict1['chs'], 
+    kmeans_dict1['iidrs'], kmeans_dict1['scs']);
+```
+![FIGURE 3: Plots of the various internal validation measures for $k=2$ to $k=20$. $k=10$ and $k=16$ were chosen because of the low intercluster-intracluster ration and the high silhouette coefficients for those values.](image-outputs/3-internal-validation.png){width=100%}
+
+<h4>2. `k = 10`</h4>
 
 ```{python}
 # | eval: false
-# | code-summary: Accessing the database.
-df_games = pd.read_sql("""SELECT * FROM games""", conn)
-df_games.columns = (['Game ID', 'White Player ID', 'Black Player ID',
-                     'Result', 'Number of Moves', 'Year', 'Tournament', 'ECO',
-                     'Opening Move'])
+# | code-summary:  Code of setting k-means k=10
+n1 = 10
+kmeans1 = KMeans(n_clusters=n1, random_state=1704, n_init=20, max_iter=1000, tol=1e-6)
+y_predict_kmeans1 = kmeans1.fit_predict(bow_tsvd1)
 ```
 
-Below you can see that **Table 4** and **Table 5** shows the summary statistics for the `players` and `games` table. **8,574 players** and **50,087** games were inserted into the chessgames database.
-
-
-|Statistic | Rating |
-|---------|-----------|
-|count	|8574.000000|
-|mean	|2361.279566|
-|std	|184.344627|
-|min	|1379.000000|
-|25%	|2268.000000|
-|50%	|2389.000000|
-|75%	|2479.000000|
-|max	|2882.000000|
-
-: Table 4: `players` table summary statistics
-
-| Statistic |	Number of Moves |	Year |	
-|---------|-----------|---------|
-| count	| 50087.000000	| 	50087.000000 |
-| mean	| 	42.893485	| 	2005.074950 |
-| std	| 17.288031	| 	11.643902 |
-| min	| 0.000000	| 	1953.000000 |
-| 25%	| 31.000000	| 	2000.000000 |
-| 50%	| 41.000000	| 	2008.000000 |
-| 75%	| 	52.000000	| 	2014.000000 |
-| max	| 	255.000000	| 	2019.000000 |
-
-: Table 5: `games` table summary statistics
-
-<h2>Results</h2>
-
-**Figure 1** below shows the top 10 opening moves used by the thirty highest-ranked chess players. 356 games, or nearly 2.6% of the games won by the top players, were opened using the Sicilian, Najdorf (ECO = B90) move. 
-
-However, looking at the top opening moves per player as seen in **Figure 3**, the Sicilian, Najdorf (ECO = B90) move does not appear as the top move for most of the players. For instance, Magnus Carlsen, the highest-ranked player, has the Ruy Lopez, Berlin Defense as his top opening move. As shown in **Table 7**, Only 7 of the top 30 players have the Sicilian, Najdorf move as their top winning opening move. Also, if we look at the top 5 highest-rated players, 3 of 5 of them have the Ruy Lopez, Berlin Defense move as the top winning move.
+$k$-means clustering was performed on the Reddit sample titles using 10 clusters. The resulting clusters and the cluster size distribution are shown below.
+The clusters are relatives balanced in terms of cluster size, with the exception of one cluster (cluster 5) which contains more than 2500 Reddit titles.
 
 ```{python}
 # | eval: false
-# | code-summary: Function to see top 10 opening moves and % won.
-df_top_moves = pd.read_sql("""SELECT g.white_pid, p.fname || ' ' || 
-                            p.lname, p.rating, g.eco, g.opening_move, count(*) 
-                            FROM games g
-                          INNER JOIN players p on g.white_pid = p.pid
-                          WHERE g.white_pid IN (SELECT pid FROM players 
-                                              WHERE rating != ''
-                                              ORDER BY rating DESC limit 30)
-                          AND g.result = '1-0'
-                          GROUP BY g.white_pid, g.eco, g.opening_move
-                          ORDER BY p.rating DESC, count(*) DESC""", conn)
-df_top_moves.columns = ['PID', 'Name', 'Rating',
-                        'ECO', 'Top Opening Move', 'Number of Games Won']
-df_top_moves = df_top_moves.groupby(['ECO', 'Top Opening Move'])[
-    'Number of Games Won'].sum().to_frame()
-df_top_moves = df_top_moves.sort_values('Number of Games Won', ascending=False)
-df_top_moves.reset_index(inplace=True)
-df_top_moves['% of Games Won'] = (
-    df_top_moves['Number of Games Won'] / df_top_moves['Number of Games Won'].sum() * 100)
-df_top_moves.head(10)
+# | code-summary:  Creating the plot and clusters
+fig, ax = plt.subplots(1,2, dpi = 100, figsize=(10,3))
+ax[0].scatter(bow_tsne1[:,0], bow_tsne1[:,1], c=y_predict_kmeans1, alpha=0.5, label=True, marker='o', s=8);
+
+counts = Counter(y_predict_kmeans1)
+labels, values = zip(*counts.items())
+indSort = np.argsort(values)[::]
+labels = np.array(labels)[indSort]
+values = np.array(values)[indSort]
+indexes = np.arange(len(labels))
+bar_width = 0.35
+ax[1].barh(indexes, values, color='#ff4500')
+ax[1].set_xlabel('Cluster size')
+ax[1].set_ylabel('Cluster labels')
+ax[1].set_yticks(indexes + bar_width);
+ax[1].set_yticklabels(labels);
+
 ```
 
+![FIGURE 4: Resulting clustering for $n=10$, and the cluster size distribution per cluster. The clusters are relatives balanced in terms of cluster size, with the exception of one cluster (cluster 5) which contains more than 2500 Reddit titles.](image-outputs/4-clusters10.png){width=100%}
 
-|   ECO | Top Opening Move           |   Number of Games Won |   % of Games Won |
-|-------|----------------------------|----------------------|------------------|
-| B90   | Sicilian, Najdorf          |                  356 |         2.566321 |
-| A07   | King's Indian Attack       |                  250 |         1.802191 |
-| B12   | Caro-Kann Defense          |                  227 |         1.63639  |
-| C78   | Ruy Lopez                   |                  206 |         1.485006 |
-| C42   | Petrov Defense             |                  205 |         1.477797 |
-| C11   | French                     |                  204 |         1.470588 |
-| E15   | Queen's Indian             |                  203 |         1.463379 |
-| A04   | Reti Opening               |                  192 |         1.384083 |
-| D37   | Queen's Gambit Declined    |                  186 |         1.34083  |
-| C65   | Ruy Lopez, Berlin Defense  |                  176 |         1.268743 |
-
-: Table 6: Top Opening Moves of the 30 highest-rated players
+To understand the theme or category of each cluster, the **top words** or the most frequent words for each cluster was obtained. Shown below are the top 10 most occurring words per cluster, and the corresponding wordclouds.
 
 ```{python}
 # | eval: false
-# | code-summary: Code to generate the Top Opening Moves.
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots(dpi=150)
-df_top_moves[10::-1].plot.barh('Top Opening Move',
-                               '% of Games Won', ax=ax, color='#BF5209',
-                               legend=False)
-ax.set_xlabel('% of Games Won')
-```
-<!-- ![FIGURE 1:Top Opening Moves of the 30 highest-rated chess players](image-outputs/image1-topmoves.png) -->
+# | code-summary:  Code to see the top 10 most occuring words per cluster
+features = tfidf_vectorizer.get_feature_names()
+weights = np.dot(kmeans1.cluster_centers_, tsvd1.components_)
+weights = np.abs(weights)
 
-Now, let us view the top opening moves per top player (top 10 players)
-
-```{python}
-# | eval: false
-# | code-summary: Code to generate the Top Opening Moves for top players
-df_top_moves = pd.read_sql("""SELECT g.white_pid, p.fname || ' ' || 
-                            p.lname, p.rating, g.eco, g.opening_move, count(*) 
-                            FROM games g
-                          INNER JOIN players p on g.white_pid = p.pid
-                          WHERE g.white_pid IN (SELECT pid FROM players 
-                                              WHERE rating != ''
-                                              ORDER BY rating DESC limit 30)
-                          AND g.result = '1-0'
-                          GROUP BY g.white_pid, g.eco
-                          ORDER BY p.rating DESC, count(*) DESC""", conn)
-df_top_moves.columns = ['PID', 'Name', 'Rating', 'ECO', 'Top Opening Move', 'Number of Games Won']
-df_top_moves = (df_top_moves
-                .groupby(['Rating', 'PID', 'Name', 'ECO', 'Top Opening Move'])
-                ['Number of Games Won'].sum().to_frame())
-df_top_moves = (df_top_moves.reset_index()
-                .sort_values(['Rating', 'Number of Games Won'],
-                             ascending=[False, False])
-                .set_index(['PID', 'Rating', 'Name', 'ECO', 'Top Opening Move']))
-df_top_moves = df_top_moves.groupby(level=0).head(10)
-df_top_moves.reset_index(inplace=True)
-df_top_moves
-
-names = df_top_moves['Name'].unique()
-
-for name in names:
-    fig, ax = plt.subplots()
-    df = df_top_moves[df_top_moves['Name'] == name]
-    df[10::-1].plot.barh('Top Opening Move', 'Number of Games Won',
-                         ax=ax, color='#BF5209', legend=False)
-    ax.set_title(name)
-    ax.set_xlabel('Number of Games Won')
+fig, ax = plt.subplots(2,5, dpi=100, figsize=(16,5))
+plt.subplots_adjust(wspace=1.1, hspace=.8)
+for i in range(kmeans1.n_clusters):
+    indices = np.argsort(weights[i])[-10:][::]
+    top_words = [features[index] for index in indices]
+    values = weights[i,indices]
+    indices = np.arange(len(top_words))
+    bar_width = 0.35
+    ax[i//5][i%5].barh(indices, values, color='#ff4500')
+    ax[i//5][i%5].set_xlabel('Weight')
+    ax[i//5][i%5].set_ylabel('Top words')
+    ax[i//5][i%5].set_yticks(indexes + bar_width);
+    ax[i//5][i%5].set_yticklabels(top_words);
+    ax[i//5][i%5].set_title('Cluster '+ str(i+1))
 ```
 
-:::  {#fig-top layout-ncol=1}
-
-Top Winning Moves Per Top Player
+:::{.column-page}
+![FIGURE 5: Top 10 most occuring words per cluster ($k=10$)](image-outputs/5-topwords.png){width=100%}
 :::
+
+
+```{python}
+# | eval: false
+# | code-summary:  Code of placing a Reddit mask wordcloud
+
+mask = np.array(Image.open('Icon-Reddit1.png'))
+topic = ['TIL', 'Apartment/Rent', 'New Year', 'Iowa Caucus', 'Food', 'Technology', 'Donald Trump', 'Bernie Sanders', 'Advise-seeking', 'Hillary Clinton']
+fig, ax = plt.subplots(2,5,dpi=100, figsize=(16,4))
+plt.subplots_adjust(wspace=.2, hspace=0)
+for ctr in range(kmeans1.n_clusters):
+    indices = [i for i, x in enumerate(y_predict_kmeans1) if x == ctr]
+    wordcloud = WordCloud(background_color="white", max_words=100, min_font_size=8, mask=mask, 
+                          prefer_horizontal=0.7, colormap='copper').generate(' '.join([docs[index] for index in indices]))
+    ax[ctr//5][ctr%5].imshow(wordcloud, interpolation='bilinear')
+    ax[ctr//5][ctr%5].axis('off');
+    ax[ctr//5][ctr%5].set_title(topic[ctr]);
+```
+:::{.column-page}
+![FIGURE 6: Wordcloud per cluster ($k=10$)](image-outputs/6-wordclouds.png){width=100%}
+:::
+
+Using $k = 10$, the general categories listed below were revealed. Sample Reddit titles for each category are also shown.
+
+The clustering results show that **Reddit is a very American-centric platform**. Four of the ten topics are related to the 2016 U.S. Presidential Election, specifically on the Republican nominee Donald Trump, Democrat candidates Hillary Clinton and Bernie Sanders, and the Iowa caucuses, a biennial electoral event that marks the first major contest of the United States presidential primary season. 
+
+Also, two of the topics are related to "advise". This reveals that apart from discussing politics, Reddit users go to Reddit to ask help or seek advise from other Redditors, whethere it be technology-related or legal. 
+
+Cluster topics:
+
+<h5> TIL (Today I Learned) </h5>
+```
+[   'til maternal kisses are not effective in alleviating minor childhood '
+    'injuries (boo-boos): a randomized, controlled and blinded study.',
+    'til goldman sachs did a study in 2009 that estimated a unified korea '
+    'could boast an economy larger than france, germany, and even japan by '
+    '2050 with a gdp of $6 trillion.',
+    "til the justice league's martian manhunter was once addicted to cookies "
+    'and hulked out when deprived of them.']
+```
+
+<h5> Apartment/rent-related topics </h5>
+```
+[   'business telephone service',
+    'illegal towing from apartment complex md.',
+    'can a landlord place a security camera in a communal space']
+```
+
+<h5> "Happy new year" </h5>
+```
+[   'new poll shows how far hillary has fallen with democrats',
+    'new zealand - new tenants wanting to take over internet account, isp is '
+    'refusing.',
+    'watch "best of maskedman - 2015 new year special." on youtube',
+    'happy new year reddit! :) i quit retirement, spent $250k in savings and '
+    '51 months (15,000 hours) to develop the new internet, owned by the '
+    'people, powered by humanity - the first company in history equally owned '
+    'by everybody alive! we are uniting the whole world into one!',
+    'til new yorkers at nye time square wear diapers and pads for lack of '
+    'porta potties']
+```
+
+<h5> "Iowa caucuses" </h5>
+```
+[   'the gop’s condemnation of ‘sanctuary cities’ is surprisingly awkward in '
+    'iowa',
+    "jesse watters questions sanders' young supporters in iowa",
+    '2016 iowa democratic caucus locations - get out there and caucus!!']
+```
+
+<h5> Food </h5>
+```
+[   'i have access to tons and tons of green onion tops,what can i make?',
+    'mexican chopped salad',
+    's&amp;m restaurant in beijing caters to millennial’s basic instincts by '
+    'serving food &amp; sex']
+```
+
+<h5> Donald Trump </h5>
+```
+[   "donald trump says he'll attract democrats; polls say that's unlikely",
+    'inside the clintons’ plan to defeat donald trump',
+    'hecklers disrupt trump rally, photographer shoved to the ground']
+```
+
+<h5> Bernie Sanders </h5>
+```
+[   '“it appears that mr. trump is getting nervous that working families are '
+    'catching on that his policies represent the interests of the billionaire '
+    'class against almost everyone else." - bernie sanders',
+    'killer mike: bernie sanders is the only candidate for black voters',
+    'bernie sanders: the most fascist candidate of all.']
+```
+
+<h5> Food </h5>
+```
+[   'i have access to tons and tons of green onion tops,what can i make?',
+    'mexican chopped salad',
+    's&amp;m restaurant in beijing caters to millennial’s basic instincts by '
+    'serving food &amp; sex']
+```
+
+<h5> Advise-seeking </h5>
+```
+[   'need an advice on gaming laptop',
+    'charged with dui 2 years and 4 months after i was involved in a single '
+    'car accident.',
+    "i'd like to buy the rights of a post on reddit to recreate in another "
+    'medium. how do i create a legal contract for this between strangers '
+    'online?',
+    'significant online food ordering trend',
+    'md - need advice evicting a suicidal/alcoholic tenant/roommate.']
+```
+
+<h5> Hillary Clinton </h5>
+```
+[   'semi automatic ropp capping machine / ropp cap sealing machine',
+    'state: hundreds of old clinton emails newly classified',
+    'georgia poll: clinton 70, sanders 23']
+```
+
+<h4>3. `k = 16`</h4>
+
+Let's try with a `k=16`
+
+```{python}
+# | eval: false
+# | code-summary:  Setting k-means to k=16
+n2 = 16
+
+kmeans2 = KMeans(n_clusters=n2, random_state=1704)
+y_predict_kmeans2 = kmeans2.fit_predict(bow_tsvd1)
+
+fig, ax = plt.subplots(1,2, dpi = 100, figsize=(10,3))
+ax[0].scatter(bow_tsne1[:,0], bow_tsne1[:,1], c=y_predict_kmeans2, alpha=0.5, label=True, marker='o', s=8);
+
+counts = Counter(y_predict_kmeans2)
+labels, values = zip(*counts.items())
+indSort = np.argsort(values)[::]
+labels = np.array(labels)[indSort]
+values = np.array(values)[indSort]
+indexes = np.arange(len(labels))
+bar_width = 0.35
+ax[1].barh(indexes, values, color='#ff4500')
+ax[1].set_xlabel('Cluster size')
+ax[1].set_ylabel('Cluster label')
+ax[1].set_yticks(indexes + bar_width);
+ax[1].set_yticklabels(labels);
+```
+
+![FIGURE 7. Clustering and Cluster size distribution for $k=16$)](image-outputs/7-k16.png){width=100%}
+
+To understand the theme or category of each cluster, the **top words** or the most frequent words for each cluster was obtained. Shown below are the top 10 most occurring words per cluster, and the corresponding wordclouds.
+
+```{python}
+# | eval: false
+# | code-summary:  Code to see the top words per 16 clusters
+features = tfidf_vectorizer.get_feature_names()
+weights = np.dot(kmeans2.cluster_centers_, tsvd1.components_)
+weights = np.abs(weights)
+fig, ax = plt.subplots(4,4, dpi=100, figsize=(10,10))
+plt.subplots_adjust(wspace=1.1, hspace=.8)
+for i in range(kmeans2.n_clusters):
+    indices = np.argsort(weights[i])[-10:][::]
+    top_words = [features[index] for index in indices]
+    values = weights[i,indices]
+    indices = np.arange(len(top_words))
+    bar_width = 0.35
+    ax[i//4][i%4].barh(top_words, values, color='#ff4500')
+    ax[i//4][i%4].set_xlabel('Weight')
+    ax[i//4][i%4].set_ylabel('Top words')
+#    ax[i//4][i%4].set_yticks(indexes + bar_width);
+    ax[i//4][i%4].set_yticklabels(top_words);
+    ax[i//4][i%4].set_title('Cluster '+ str(i+1))
+```
+
+:::{.column-page}
+![FIGURE 8. Top 10 most frequest words per cluster ($k=16$)](image-outputs/8-k16-words.png){width=100%}
+:::
+
+```{python}
+# | eval: false
+# | code-summary:  Code of placing a Reddit mask wordcloud for k=16
+
+topics1 = ['Tech support', 'Clinton', 'Trump', 'Cluster 4', 'Recipes', 'TIL', 'Aparment/Rent', 'Technology'
+           , 'Sanders', 'Food', 'Cluster 11', 'Car-related queries', 'New Year', 'Reaction Compilation', 'Legal concerns', 'Cluster 15']
+
+fig, ax = plt.subplots(4,4,dpi=100, figsize=(16,12))
+plt.subplots_adjust(wspace=0.2, hspace=0)
+for ctr in range(kmeans2.n_clusters):
+    indices = [i for i, x in enumerate(y_predict_kmeans2) if x == ctr]
+    wordcloud = WordCloud(background_color="white", max_words=100, min_font_size=8, mask=mask, 
+                          prefer_horizontal=0.6, colormap='copper').generate(' '.join([docs[index] for index in indices]))
+
+    ax[ctr//4][ctr%4].imshow(wordcloud, interpolation='bilinear')
+    ax[ctr//4][ctr%4].axis('off');
+    ax[ctr//4][ctr%4].set_title(topics1[ctr]);
+```
+
+:::{.column-page}
+![FIGURE 9. Wordcloud per cluster ($k=16$)](image-outputs/9-k16-wordclouds.png){width=100%}
+:::
+
+As the number of clusters was increased, the more specific themes emerge. The following themes emerged:  
+
+
+<h5> Technical Support </h5>
+```
+[   'smoothly solution for the canon printer 1-877-776-4348',
+    'follow these step and escan antivirus easily',
+    'norton antivirus technical support phone number',
+    'itech logik | uk microsoft help desk phone number',
+    'til tupak shakur became the first artist to have an album at number one '
+    'on the billboard 200 while serving a prison sentence.']
+```
+
+<h5> Hillary Clinton Emails </h5>
+```
+[   'semi automatic ropp capping machine / ropp cap sealing machine',
+    'state: hundreds of old clinton emails newly classified',
+    'georgia poll: clinton 70, sanders 23',
+    'nsa whistleblower: clinton email server was ‘open to being hacked by '
+    'anybody in the world’',
+    "hillary clinton's new hampshire boosters out in full force"]
+```
+
+<h5> Donald Trump </h5>
+```
+[   "donald trump says he'll attract democrats; polls say that's unlikely",
+    'inside the clintons’ plan to defeat donald trump',
+    'hecklers disrupt trump rally, photographer shoved to the ground',
+    'a photographer covering a donald trump rally in virginia said a secret '
+    'service agent choked him and slammed him to the ground monday as he tried '
+    'to leave a media pen at the event where a protest erupted.',
+    'til that donald trump sold steaks at the sharper image']
+```
+
+<h5> Recipes </h5>
+```
+[   'i have access to tons and tons of green onion tops,what can i make?',
+    'mexican chopped salad',
+    'dublin, ireland has gone mad for spice bags from takeaways, i tried my '
+    'hand at my own. potato, shredded chicken, peppers and onions, cooked in '
+    'garlic, chillies and spices. apologies for photo quality!',
+    'tips for starting a healthy lifestyle!',
+    "arroz carreteiro - brazilian wagoners' rice gourmetcentric"]
+```
+<h5> TIL (Today I learned) topics </h5>
+```
+[   'til maternal kisses are not effective in alleviating minor childhood '
+    'injuries (boo-boos): a randomized, controlled and blinded study.',
+    'til goldman sachs did a study in 2009 that estimated a unified korea '
+    'could boast an economy larger than france, germany, and even japan by '
+    '2050 with a gdp of $6 trillion.',
+    "til the justice league's martian manhunter was once addicted to cookies "
+    'and hulked out when deprived of them.',
+    'til that the top 25 hedge fund managers in the us earn more than all us '
+    'kindergarten teachers (and pay a smaller tax rate)',
+    'til leonard howell ("the first rasta") preached that ras tafari, the '
+    'emperor of ethiopia in 1933, was the messiah, that black people were the '
+    'chosen of god and that they would soon be restored to their native '
+    'country of ethiopia.']
+```
+
+<h5> Apartment and Rent Concerns </h5>
+```
+[   'my dad died yesterday and my mom is now being evicted because she is not '
+    'on the lease, what can she do?',
+    'landlord charged my girlfriend a damage fee of $5,000 for a broken door',
+    'is refusing to take a breathalyzer test an admission of guilt?',
+    'does an apartment with living/housing code violations against the city '
+    'equal a nullified lease?',
+    'had verbal agreement with room mate for payment of back monies to be '
+    'paid, to be formalized in writing, questions, etc.']
+```
+
+<h5> Bernie Sanders </h5>
+```
+[   '“it appears that mr. trump is getting nervous that working families are '
+    'catching on that his policies represent the interests of the billionaire '
+    'class against almost everyone else." - bernie sanders',
+    'killer mike: bernie sanders is the only candidate for black voters',
+    'hillary clinton has already forgotten about bernie sanders | vice | '
+    'united states',
+    'bernie sanders ‘revolution’ threatens hillary clinton in iowa.',
+    "jesse watters questions sanders' young supporters in iowa"]
+```
+
+<h5> Food </h5>
+```
+[   'semi automatic ropp capping machine / ropp cap sealing machine',
+    'state: hundreds of old clinton emails newly classified',
+    'georgia poll: clinton 70, sanders 23']
+```
+<h5> Bernie Sanders </h5>
+```
+[   '“it appears that mr. trump is getting nervous that working families are '
+    'catching on that his policies represent the interests of the billionaire '
+    'class against almost everyone else." - bernie sanders',
+    'killer mike: bernie sanders is the only candidate for black voters',
+    'bernie sanders: the most fascist candidate of all.']
+```
+
+<h5> Food </h5>
+```
+[   'significant online food ordering trend',
+    's&amp;m restaurant in beijing caters to millennial’s basic instincts by '
+    'serving food &amp; sex',
+    'food near me – jasper arkansas',
+    'as i am very polish and grew up eating a lot of good food, i decided to '
+    'cook it for myself tonight.',
+    'food in thailand - november 2015']
+```
+
+<h5> Car-related topics </h5>
+```
+[   'charged with dui 2 years and 4 months after i was involved in a single '
+    'car accident.',
+    "[md] car impounded after repair order wasn't received in september, "
+    'options?',
+    'tesla unveils the model 3, its lowest-priced car',
+    'lincolnshire county council hit by £1m malware demand',
+    'florida adverse possession law question and others regarding married but '
+    'separate couples.']
+```
+
+<h5> "Happy new year" reddits </h5>
+```
+[   'watch "best of maskedman - 2015 new year special." on youtube',
+    'happy new year reddit! :) i quit retirement, spent $250k in savings and '
+    '51 months (15,000 hours) to develop the new internet, owned by the '
+    'people, powered by humanity - the first company in history equally owned '
+    'by everybody alive! we are uniting the whole world into one!',
+    'mobile game of the year 2015: horizon chase',
+    'til that j. r. r. tolkien hand wrote and illustrated letters to his '
+    'children from father christmas every year for 20 years.',
+    '[bellingham, wa] wife looking at buying property in bella coola, bc; '
+    'legal implications of living half the year here in bellingham and half '
+    'the year in bella coola']
+```
+<h5> Vines reaction compilation </h5>
+```
+[   'happy 2016 and may all your games be mostly bug free',
+    'eight issues that could shape politics in 2016',
+    '2016 iowa democratic caucus locations - get out there and caucus!!',
+    '♥ dragonsden vines 🔒 - february 1, 2016 🔱 dragonsden reaction compilation '
+    '🎨',
+    'ark: surival evolved rings in 2016 with giant, rideable kangaroos']
+```
+
+<h5> Legal concerns </h5>
+```
+[   '(california) is it a crime when a religious figure/ lecturer has '
+    'relations with one of his followers',
+    'being accused of public indecency, among other things. this is a '
+    'misunderstanding because i had health issues. [kansas, usa]',
+    "[philadelphia, pa] i'm concerned that something suspicious is going on at "
+    "my neighbor's house. i'd like to know if there's enough probable cause "
+    'for the police to investigate.',
+    "refugee's treated worse than dogs!",
+    'i have a great idea for a trpg.']
+```
+
 
 <h2>Conclusions and Recommendations</h2>
 
@@ -550,6 +906,7 @@ For future studies, it is suggested to perform hierarchical clustering.
 <h2>References</h2>
 <i>
 <ul>
+<li> [Thumbnail Image](https://www.techspot.com/news/91081-reddit-bans-subreddit-accused-spreading-covid-19-disinformation.html)
 <li> [All the news](https://towardsdatascience.com/all-the-news-17fa34b52b9d)
 <li> [Clustering text documents using k-means](https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py)
 <li> [Latent Semantic Analysis](http://www.scholarpedia.org/article/Latent_semantic_analysis)

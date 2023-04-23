@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2022-04-20">
+<meta name="dcterms.date" content="2022-04-23">
 <meta name="description" content="Identifying underlying themes in Reddit titles using non-supervised clustering">
 
 <title>Sandro Luis R. Silva - Unraveling Subreddits</title>
@@ -198,7 +198,7 @@ gtag('config', 'G-9FYFKWYLVG', { 'anonymize_ip': true});
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">April 20, 2022</p>
+        <p class="date">April 23, 2022</p>
       </div>
     </div>
     
@@ -211,7 +211,7 @@ gtag('config', 'G-9FYFKWYLVG', { 'anonymize_ip': true});
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content quarto-banner-title-block" id="quarto-document-content">
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
 <!-- Google tag (gtag.js) -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-9FYFKWYLVG"></script>
 <script>
@@ -225,7 +225,7 @@ gtag('config', 'G-9FYFKWYLVG', { 'anonymize_ip': true});
 
 
 
-<!-- ![](thumbnail.jpeg) -->
+<p><img src="thumbnail.jpeg" class="img-fluid"></p>
 <h1>
 Executive Summary
 </h1>
@@ -244,8 +244,7 @@ A. Introduction and the Problem Statement
 <h2 class="anchored">
 B. Methodology
 </h2>
-<p>Reddit titles and authors were scraped from the <a href="https://www.reddit.com/">Reddit</a> website and stored in a text file. The file is tab-delimited and has two columns: author and title.</p>
-The general workflow for clustering the Reddit titles involves the following steps:
+<p>Reddit titles and authors were scraped from the <a href="https://www.reddit.com/">Reddit</a> website and stored in a text file. The file is tab-delimited and has two columns: author and title. Flow of this notebook is as follows:</p>
 <ol>
 <li>
 Pre-requisites: Load Requirement Package
@@ -266,835 +265,838 @@ Representative-based clustering using <em>k</em>-means
 Pre-requisites: Load Requirement Package
 </h3>
 <p>Before anything else, let us first load all important modules for this exercise.</p>
-<section id="these-are-standard-imports" class="level1">
-<h1>These are standard imports</h1>
-<p>import pandas as pd import matplotlib.pyplot as plt import numpy as np</p>
-<p>from collections import Counter from IPython.display import display_html from wordcloud import WordCloud, STOPWORDS</p>
-<p>from sklearn.preprocessing import StandardScaler from sklearn.feature_extraction.text import TfidfVectorizer from sklearn.feature_extraction import stop_words from sklearn.manifold import TSNE from sklearn.decomposition import TruncatedSVD from sklearn.metrics import calinski_harabaz_score, silhouette_score from sklearn.cluster import KMeans from sklearn.pipeline import make_pipeline from sklearn.preprocessing import Normalizer</p>
-<p>import nltk from nltk.tokenize import sent_tokenize, word_tokenize from nltk.stem.porter import PorterStemmer from nltk.corpus import stopwords from nltk import FreqDist, RegexpTokenizer</p>
-<p>from IPython.display import HTML from scipy.spatial.distance import euclidean from scipy.cluster.hierarchy import linkage, dendrogram from scipy.spatial.distance import euclidean, cityblock</p>
-<p>import urllib import requests import pprint from PIL import Image</p>
-<p>pp = pprint.PrettyPrinter(indent=4)</p>
-HTML(’’’
-<script>
-code_show=true; 
-function code_toggle() {
- if (code_show){
- $('div.input').hide();
- } else {
- $('div.input').show();
- }
- code_show = !code_show
-} 
-$( document ).ready(code_toggle);
-</script>
-<form action="javascript:code_toggle()">
-<input type="submit" value="Click here to toggle on/off the raw code.">
-</form>
-<p>’’’)</p>
-<p>Additionally, we should create a sqlite3 database for where we will store the data what we will scrape. For that, we shall use the <code>sqlite3</code> python module.</p>
 <div class="cell" data-execution_count="1">
 <details>
-<summary>Import the SQLite3 moule then create an empty database called chessgames.</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>conn <span class="op">=</span> sqlite3.<span class="ex">connect</span>(<span class="st">'chessgames.db'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>Next, since we will be doing some web scraping, which may want to set our proxy and headers. A proxy server can help a scraper avoid IP address blocking, access geographically restricted content, facilitate high-volume scraping, and avoid detection. Headers in web scraping are a part of the HTTP request that provides information about the client making the request. They are important because they can affect the response received from the server. Some websites may block or restrict access to content based on the header information. To avoid being detected as a bot or being blocked by the server, it is important to ensure that the headers used in web scraping are appropriate and mimic those of a real user.</p>
-<div class="cell" data-execution_count="2">
-<details>
-<summary>Edit our Proxy and Heading</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Setting of proxy</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'HTTP_PROXY'</span>] <span class="op">=</span> <span class="st">'http://13.115.147.132:8080'</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">'HTTPS_PROXY'</span>] <span class="op">=</span> <span class="st">'http://13.115.147.132:8080'</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Setting of header</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>header <span class="op">=</span> {<span class="st">'''accept: text/html,application/xhtml+xml,application/xml;q=0.9,</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">            image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">            accept-Encoding: gzip, deflate</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">            accept-Language: en-US,en;q=0.9</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">            cache-Control: max-age=0</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">            connection: keep-alive</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="st">            host: www.chessgames.com</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">            referer: http://www.chessgames.com/perl/chess.pl?page=16&amp;pid=14125</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">            &amp;playercomp=either&amp;year=2010&amp;yearcomp=ge</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">            upgrade-Insecure-Requests: 1</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">            user-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 </span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="st">            (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'''</span>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<summary>Loading required modules</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># These are standard imports</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> Counter</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> display_html</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> wordcloud <span class="im">import</span> WordCloud, STOPWORDS</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.feature_extraction.text <span class="im">import</span> TfidfVectorizer</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.feature_extraction <span class="im">import</span> stop_words</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.manifold <span class="im">import</span> TSNE</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.decomposition <span class="im">import</span> TruncatedSVD</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> calinski_harabaz_score, silhouette_score</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.cluster <span class="im">import</span> KMeans</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> make_pipeline</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> Normalizer</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> sklearn.metrics <span class="im">import</span> confusion_matrix</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> nltk</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nltk.tokenize <span class="im">import</span> sent_tokenize, word_tokenize</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nltk.stem.porter <span class="im">import</span> PorterStemmer</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nltk.corpus <span class="im">import</span> stopwords</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nltk <span class="im">import</span> FreqDist, RegexpTokenizer</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> HTML</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.spatial.distance <span class="im">import</span> euclidean</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.cluster.hierarchy <span class="im">import</span> linkage, dendrogram</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.spatial.distance <span class="im">import</span> euclidean, cityblock</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> urllib</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pprint</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>pp <span class="op">=</span> pprint.PrettyPrinter(indent<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>HTML(<span class="st">'''&lt;script&gt;</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="st">code_show=true; </span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="st">function code_toggle() {</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="st"> if (code_show){</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="st"> $('div.input').hide();</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="st"> } else {</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="st"> $('div.input').show();</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="st"> }</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="st"> code_show = !code_show</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="st">} </span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="st">$( document ).ready(code_toggle);</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;/script&gt;</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;form action="javascript:code_toggle()"&gt;&lt;input type="submit" value="Click here to toggle on/off the raw code."&gt;&lt;/form&gt;'''</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <h3 class="anchored">
-Step 1: Understand the Data and Conduct Web Scraping Tool
+Reading the Reddit data
 </h3>
-<p>To analyze the top opening moves of the highest-rated chess players, web data extraction was performed on the pages of <a href="ChessGames.com">ChessGames.com</a>. We focused on two entities, namely the chess players (<code>players</code>) and their games (<code>games</code>). Data for both entities were saved to an SQLlite database (<code>chessgames.db</code>).</p>
-<p>The <code>players</code> table was obtained by scraping all web pages under the Chess Players Directory <a href="http://www.chessgames.com/directory/">http://www.chessgames.com/directory/</a>. Each page in this directory corresponds to a letter of the alphabet (e.g., <a href="http://www.chessgames.com/directory/A">http://www.chessgames.com/directory/A</a>. Each player has the following information:</p>
-<center>
-Table 1: <code>player</code> table fields
-</center>
+<p>The data was stored in the ACCESS lab cloud computer (JOJIE). So for this instance, the sample Reddit text file was read using the <code>read_csv</code> function of <code>pandas</code>. In reading the file, tab (<code>\t</code>) separator was used, and the first line was skipped.</p>
+<div class="cell" data-execution_count="2">
+<details>
+<summary>Load Reddit data</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">'reddit-dmw-sample.txt'</span>, sep<span class="op">=</span><span class="st">'</span><span class="ch">\t</span><span class="st">'</span>, skiprows<span class="op">=</span><span class="dv">1</span>, header<span class="op">=</span><span class="va">None</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                 usecols <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>], </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                 names <span class="op">=</span> [<span class="st">'author'</span>, <span class="st">'title'</span>],)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The resulting dataframe has two columns: <code>author</code> and <code>title</code>. A sample of the Reddit topics are shown below.</p>
 <table class="table">
-<colgroup>
-<col style="width: 13%">
-<col style="width: 32%">
-<col style="width: 42%">
-<col style="width: 11%">
-</colgroup>
+<caption>Tale 1: Sample Reddits from the Data</caption>
 <thead>
 <tr class="header">
-<th>Field</th>
-<th>Description</th>
-<th>Long Description</th>
-<th>Data Type</th>
+<th>author</th>
+<th>title</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>pid</td>
-<td>Player ID</td>
-<td>indentification number</td>
-<td>integer</td>
+<td>PrimotechInc</td>
+<td>7 Interesting Hidden Features of apple ios9</td>
 </tr>
 <tr class="even">
-<td>lname</td>
-<td>Last Name</td>
-<td>player’s last name</td>
-<td>varchar</td>
+<td>xvagabondx</td>
+<td>Need an advice on gaming laptop</td>
 </tr>
 <tr class="odd">
-<td>fname</td>
-<td>First Name</td>
-<td>player’s first name</td>
-<td>varchar</td>
+<td>nkindustries</td>
+<td>Semi automatic ROPP Capping machine / ROPP Cap…</td>
 </tr>
 <tr class="even">
-<td>rating</td>
-<td>Rating</td>
-<td>highest rating achieved in the database</td>
-<td>integer</td>
+<td>Philo1927</td>
+<td>Microsoft Plumbs Ocean’s Depths to Test Underw…</td>
 </tr>
 <tr class="odd">
-<td>start_year</td>
-<td>Start Year</td>
-<td>player’s starting year</td>
-<td>integer</td>
-</tr>
-<tr class="even">
-<td>end_year</td>
-<td>End Year</td>
-<td>player’s ending year</td>
-<td>integer</td>
-</tr>
-<tr class="odd">
-<td>game_count</td>
-<td>Number of games</td>
-<td>number of games in database</td>
-<td>integer</td>
+<td>tuyetnt171</td>
+<td>OPPO F1 chính hãng - Fptshop.com.vn</td>
 </tr>
 </tbody>
 </table>
-<p>The <code>get_player_info</code> method was used to scrape the player information (seen below).</p>
+<h3 class="anchored">
+Initial data cleaning
+</h3>
+<p>Once the Reddit data is stored in a dataframe, initial data cleaning was performed by converting all titles to lowercase, and removing leading and trailing spaces. Duplicate titles were also dropped.</p>
+<p>The unique titles are then stored in a list:</p>
 <div class="cell" data-execution_count="3">
 <details>
-<summary>Function description for get_player_info()</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_player_info(url):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">'''</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Scrapes player info from the specified URL.</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameter</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ---------</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">    URL : URL of player page</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Return</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">    ------</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">    list of tuples (pid, lname, fname, rating, start_year, end_year, </span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">    game_count)</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">    '''</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    players_list <span class="op">=</span> []</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    resp <span class="op">=</span> requests.get(url, headers<span class="op">=</span>headers)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    time.sleep(<span class="dv">1</span>)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"</span><span class="ch">\t</span><span class="st">Status code: "</span>, resp.status_code)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    resp_soup <span class="op">=</span> BeautifulSoup(resp.text, <span class="st">'lxml'</span>)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    players <span class="op">=</span> resp_soup.select(<span class="st">'tr[bgcolor="#FFFFFF"],tr[bgcolor="#FFEEDD"]'</span>)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> player <span class="kw">in</span> players:</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        data <span class="op">=</span> player.select(<span class="st">'td'</span>)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        rating <span class="op">=</span> data[<span class="dv">0</span>].text.strip()</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        name <span class="op">=</span> data[<span class="dv">2</span>].text.split(<span class="st">','</span>)</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(name) <span class="op">==</span> <span class="dv">2</span>:</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>            fname <span class="op">=</span> name[<span class="dv">1</span>].strip()</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>            fname <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>        lname <span class="op">=</span> name[<span class="dv">0</span>].strip()</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        years <span class="op">=</span> data[<span class="dv">3</span>].text.strip()</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        game_count <span class="op">=</span> data[<span class="dv">4</span>].text.strip()</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        start_year <span class="op">=</span> re.match(<span class="st">'(\d</span><span class="sc">{4}</span><span class="st">)?-?(\d</span><span class="sc">{4}</span><span class="st">)'</span>, years).group(<span class="dv">1</span>)</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>        end_year <span class="op">=</span> re.match(<span class="st">'(\d</span><span class="sc">{4}</span><span class="st">)?-?(\d</span><span class="sc">{4}</span><span class="st">)'</span>, years).group(<span class="dv">2</span>)</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>        url <span class="op">=</span> <span class="bu">str</span>(player.select(<span class="st">'a'</span>)[<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>        pid <span class="op">=</span> re.match(<span class="st">'.*?pid=(\d+)'</span>, url).group(<span class="dv">1</span>)</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>        tup <span class="op">=</span> (pid, lname, fname, rating, start_year, end_year, game_count)</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">'</span><span class="ch">\t</span><span class="st">'</span>, tup)</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>        players_list.append(tup)</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> players_list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<summary>Viewing the unique titles</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'title'</span>] <span class="op">=</span> df[<span class="st">'title'</span>].<span class="bu">str</span>.lower()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'title'</span>] <span class="op">=</span> df[<span class="st">'title'</span>].<span class="bu">str</span>.strip()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>docs <span class="op">=</span> <span class="bu">list</span>(df.title.unique())</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>pp.pprint(<span class="st">'Number of titles: '</span> <span class="op">+</span> <span class="bu">str</span>(<span class="bu">len</span>(docs)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>For the <code>get_player_info</code> function, the <code>Requests</code> module is a Python library used for making HTTP requests. We can use basic methods such as the <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, and others. The module also provides support for handling cookies, adding custom headers, and handling redirects. We also used the <code>BeautifulSoup</code> Python library, which is a typical package in parsing HTML and XML documents. The package parses the pased HTML source code into a parsed tree, which can be easily traversed. Finally, we used the <code>re</code> Python package to utilize <code>Regular Expression</code> for easier string matching.</p>
-<p><br> Next, the players data are then inserted to the <code>players</code> table using the <code>insert_players</code> method:</p>
+<pre><code>'Number of titles: 5848'</code></pre>
+<p>After removing duplicates, there are 5848 unique Reddit titles in the sample dataset.</p>
+<p>Sample cleaned topics are shown below. Note that there still are punctuation marks and special characters. These will be removed during vectorization.</p>
+<pre><code>[   '7 interesting hidden features of apple ios9',
+    'need an advice on gaming laptop',
+    'semi automatic ropp capping machine / ropp cap sealing machine',
+    'microsoft plumbs ocean’s depths to test underwater data center',
+    'oppo f1 chính hãng - fptshop.com.vn',
+    'stewed ramps w/ fixings in helvatia, wv',
+    '(california) is it a crime when a religious figure/ lecturer has '
+    'relations with one of his followers',
+    'being accused of public indecency, among other things. this is a '
+    'misunderstanding because i had health issues. [kansas, usa]',
+    '[us-ca/nv] my parents have been separated for almost 20 years, my mom '
+    'found out my dad divorced her without her knowledge a few years ago when '
+    'i was about 14--can she claim backdated child support?',
+    'skyrim ps4?']</code></pre>
+<h3 class="anchored">
+Exploratory Data Analysis
+</h3>
+<p>Shown below are the top 15 most used words in the Reddit sample data. Note that the most common word is “TIL” (Today I Learned), followed by the names of prominent US politicians such as US President Donald Trump, 2016 presidential candidate Hillary Clinton, and Senator Bernie Sanders. All three of them figured prominently in the 2016 U.S. presidential elections, with Trump as the presidential nominee under the Republican party, while Clinton and Sanders as the Democratic party presidential candidates. Initial analysis of the data reveal that the <strong>2016 U.S. Presidential Election is one of the primary themes in the sample Reddit data</strong>.</p>
 <div class="cell" data-execution_count="4">
 <details>
-<summary>Function description for insert_players()</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> insert_players(conn):</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">'''</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Inserts players into the players table</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameter</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ---------</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">    conn : sqlite connection</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">    '''</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    cur <span class="op">=</span> conn.cursor()</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> char <span class="kw">in</span> string.ascii_uppercase:</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        url <span class="op">=</span> <span class="st">"http://www.chessgames.com/directory/"</span> <span class="op">+</span> char <span class="op">+</span> <span class="st">".html"</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(url)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        players <span class="op">=</span> get_player_info(url)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        cur.executemany(<span class="st">'''INSERT INTO players </span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="st">                            VALUES (?, ?, ?, ?, ?, ?, ?);'''</span>, players)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        conn.commit()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<summary>Viewing the unique titles</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> np.array(Image.<span class="bu">open</span>(<span class="st">'Icon-Reddit1.png'</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>tokenizer <span class="op">=</span> RegexpTokenizer(<span class="vs">r'\w{2,}'</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>word_tokens <span class="op">=</span> tokenizer.tokenize(<span class="st">' '</span>.join(docs))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>stopword <span class="op">=</span> <span class="bu">set</span>(stopwords.words(<span class="st">'english'</span>) <span class="op">+</span> <span class="bu">list</span>(stop_words.ENGLISH_STOP_WORDS))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>docs_filtered <span class="op">=</span> [w <span class="cf">for</span> w <span class="kw">in</span> word_tokens <span class="cf">if</span> <span class="kw">not</span> w <span class="kw">in</span> stopword] </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> FreqDist(docs_filtered)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>labels, values <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>counts.items())</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>indSort <span class="op">=</span> np.argsort(values)[::]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> np.array(labels)[indSort[<span class="op">-</span><span class="dv">15</span>:]]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> np.array(values)[indSort[<span class="op">-</span><span class="dv">15</span>:]]</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>indexes <span class="op">=</span> np.arange(<span class="bu">len</span>(labels))</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>bar_width <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, dpi<span class="op">=</span><span class="dv">100</span>, figsize <span class="op">=</span> (<span class="dv">10</span>,<span class="dv">4</span>))</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].barh(indexes, values, color<span class="op">=</span><span class="st">'#ff4500'</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_xlabel(<span class="st">'Word count'</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">'Most common words in the Reddit sample data'</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_yticks(indexes <span class="op">+</span> bar_width)<span class="op">;</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_yticklabels(labels)<span class="op">;</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>wordcloud <span class="op">=</span> WordCloud(background_color<span class="op">=</span><span class="st">"white"</span>, max_words<span class="op">=</span><span class="dv">100</span>, min_font_size<span class="op">=</span><span class="dv">8</span>, mask<span class="op">=</span>mask, </span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>                      prefer_horizontal<span class="op">=</span><span class="fl">0.6</span>, colormap<span class="op">=</span><span class="st">'copper'</span>, relative_scaling<span class="op">=</span><span class="fl">.5</span>).generate(<span class="st">' '</span>.join(docs_filtered))</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].imshow(wordcloud, interpolation<span class="op">=</span><span class="st">'bilinear'</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].axis(<span class="st">'off'</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Here, we access the enter the created database, then Insert the players and associated metadata into the database.</p>
-<p><br> Next, this study will focus on the games of the thirty (30) highest-rated players. The ranking was based on the rating provided by the website. To extract the games of these players, we first obtained their player IDs (<code>pid</code>) by using the <code>pandas</code> method <code>read_sql</code>. Here we can pass a <code>SQL</code> statement:</p>
-<div class="cell" data-execution_count="5">
-<details>
-<summary>Method to query the database</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_players <span class="op">=</span> pd.read_sql(<span class="st">"""SELECT pid, fname || ' ' || lname, rating, </span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">                                    game_count </span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">                            FROM players</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">                            WHERE rating != ''</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">                            ORDER BY rating DESC"""</span>, conn)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>df_players.columns <span class="op">=</span> [<span class="st">'Player ID'</span>, <span class="st">'Name'</span>, <span class="st">'Rating'</span>, <span class="st">'Number of Games'</span>]</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>df_players.head(<span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<table class="table">
-<caption>Table 2: Top 30 chess players based on Rating</caption>
-<thead>
-<tr class="header">
-<th style="text-align: right;">Player ID</th>
-<th>Name</th>
-<th style="text-align: right;">Rating</th>
-<th style="text-align: right;">Number of Games</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: right;">52948</td>
-<td>Magnus CARLSEN</td>
-<td style="text-align: right;">2882</td>
-<td style="text-align: right;">3,016</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">15940</td>
-<td>Garry KASPAROV</td>
-<td style="text-align: right;">2851</td>
-<td style="text-align: right;">2,385</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">76172</td>
-<td>Fabiano CARUANA</td>
-<td style="text-align: right;">2844</td>
-<td style="text-align: right;">1,891</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">17316</td>
-<td>Levon ARONIAN</td>
-<td style="text-align: right;">2830</td>
-<td style="text-align: right;">2,708</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">95915</td>
-<td>Wesley SO</td>
-<td style="text-align: right;">2822</td>
-<td style="text-align: right;">1,400</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">56798</td>
-<td>Maxime VACHIER-LAGRAVE</td>
-<td style="text-align: right;">2819</td>
-<td style="text-align: right;">2,369</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">12088</td>
-<td>Viswanathan ANAND</td>
-<td style="text-align: right;">2817</td>
-<td style="text-align: right;">3,542</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">12295</td>
-<td>Vladimir KRAMNIK</td>
-<td style="text-align: right;">2817</td>
-<td style="text-align: right;">3,026</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">12089</td>
-<td>Veselin TOPALOV</td>
-<td style="text-align: right;">2816</td>
-<td style="text-align: right;">2,278</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">50065</td>
-<td>Shakhriyar MAMEDYAROV</td>
-<td style="text-align: right;">2814</td>
-<td style="text-align: right;">2,254</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">10084</td>
-<td>Hikaru NAKAMURA</td>
-<td style="text-align: right;">2814</td>
-<td style="text-align: right;">2,424</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">17279</td>
-<td>Alexander GRISCHUK</td>
-<td style="text-align: right;">2797</td>
-<td style="text-align: right;">2,586</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">52629</td>
-<td>Ding LIREN</td>
-<td style="text-align: right;">2797</td>
-<td style="text-align: right;">920</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">107252</td>
-<td>Anish GIRI</td>
-<td style="text-align: right;">2793</td>
-<td style="text-align: right;">1,522</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">49796</td>
-<td>Teimour RADJABOV</td>
-<td style="text-align: right;">2793</td>
-<td style="text-align: right;">1,746</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">54535</td>
-<td>Sergey KARJAKIN</td>
-<td style="text-align: right;">2788</td>
-<td style="text-align: right;">2,399</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">11719</td>
-<td>Alexander MOROZEVICH</td>
-<td style="text-align: right;">2788</td>
-<td style="text-align: right;">1,847</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">12183</td>
-<td>Vassily IVANCHUK</td>
-<td style="text-align: right;">2787</td>
-<td style="text-align: right;">3,752</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">19233</td>
-<td>Robert James FISCHER</td>
-<td style="text-align: right;">2785</td>
-<td style="text-align: right;">1,052</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">20719</td>
-<td>Anatoly KARPOV</td>
-<td style="text-align: right;">2780</td>
-<td style="text-align: right;">3,609</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">13847</td>
-<td>Boris GELFAND</td>
-<td style="text-align: right;">2777</td>
-<td style="text-align: right;">3,014</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">79968</td>
-<td>Peter SVIDLER</td>
-<td style="text-align: right;">2769</td>
-<td style="text-align: right;">2,786</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">49080</td>
-<td>Leinier Dominguez PEREZ</td>
-<td style="text-align: right;">2768</td>
-<td style="text-align: right;">1,342</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">12109</td>
-<td>Ruslan PONOMARIOV</td>
-<td style="text-align: right;">2768</td>
-<td style="text-align: right;">1,989</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">54683</td>
-<td>Ian NEPOMNIACHTCHI</td>
-<td style="text-align: right;">2767</td>
-<td style="text-align: right;">1,614</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">49246</td>
-<td>Pentala HARIKRISHNA</td>
-<td style="text-align: right;">2766</td>
-<td style="text-align: right;">1,442</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">49456</td>
-<td>Pavel ELJANOV</td>
-<td style="text-align: right;">2765</td>
-<td style="text-align: right;">1,409</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">15874</td>
-<td>Gata KAMSKY</td>
-<td style="text-align: right;">2763</td>
-<td style="text-align: right;">1,889</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">12290</td>
-<td>Peter LEKO</td>
-<td style="text-align: right;">2763</td>
-<td style="text-align: right;">2,364</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">112240</td>
-<td>Yu YANGYI</td>
-<td style="text-align: right;">2762</td>
-<td style="text-align: right;">991</td>
-</tr>
-</tbody>
-</table>
-<p>The <code>games</code> table was then populated by web scraping <small><code>http://www.chessgames.com/perl/chessplayer?pid=&lt;pid&gt;</code></small> and iterating over the top 30 player IDs. The following fields were extracted for each game:</p>
-<table class="table">
-<caption>Table 3: <code>games</code> table fields</caption>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-<th>Data Type</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>gid</td>
-<td>Game ID</td>
-<td>integer</td>
-</tr>
-<tr class="even">
-<td>white_pid</td>
-<td>White Player ID</td>
-<td>int</td>
-</tr>
-<tr class="odd">
-<td>black_pid</td>
-<td>Black Player ID</td>
-<td>int</td>
-</tr>
-<tr class="even">
-<td>result</td>
-<td>Result</td>
-<td>varchar</td>
-</tr>
-<tr class="odd">
-<td>moves</td>
-<td>Number of moves</td>
-<td>integer</td>
-</tr>
-<tr class="even">
-<td>year</td>
-<td>Year</td>
-<td>integer</td>
-</tr>
-<tr class="odd">
-<td>tournament</td>
-<td>Tournament Name</td>
-<td>varchar</td>
-</tr>
-<tr class="even">
-<td>eco</td>
-<td>Encyclopaedia of Chess Openings</td>
-<td>varchar</td>
-</tr>
-<tr class="odd">
-<td>opening_move</td>
-<td>Opening move</td>
-<td>varchar</td>
-</tr>
-</tbody>
-</table>
-<p>The <code>get_players_games</code> function was implemented to scrape the game data for a given Player ID <code>pid</code> and page number <code>page_start</code>. This writes the games data of the player to a CSV file (<code>&lt;pid&gt;.csv</code>):</p>
-<div class="cell" data-execution_count="6">
-<details>
-<summary>Function description for the get_players_games()</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_player_games(pid, page_start):</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Web scrapes the games list for a player and writes it to a CSV </span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">    -----------</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">    pid : player ID</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">    page_start : starting page</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">    --------</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">    None</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    url <span class="op">=</span> <span class="st">'http://www.chessgames.com/perl/chessplayer?pid='</span> <span class="op">+</span> <span class="bu">str</span>(pid)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    resp <span class="op">=</span> requests.get(url, headers<span class="op">=</span>headers)</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">'pid = '</span>, pid, <span class="st">'</span><span class="ch">\t</span><span class="st">url = '</span>, url, <span class="st">'</span><span class="ch">\t</span><span class="st">code = '</span>, resp.status_code)</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    time.sleep(np.random.randint(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    soup <span class="op">=</span> BeautifulSoup(resp.text, <span class="st">'lxml'</span>)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    div_page_count <span class="op">=</span> soup.select(</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">'td[background$="/chessimages/table_stripes.gif"]'</span>)</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    page_count <span class="op">=</span> <span class="bu">int</span>(re.findall(<span class="st">'of (\d+)\;'</span>, div_page_count[<span class="dv">0</span>].text)[<span class="dv">0</span>])</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(<span class="ss">f'</span><span class="sc">{</span>pid<span class="sc">}</span><span class="ss">.csv'</span>, <span class="st">'a'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        csv_writer <span class="op">=</span> csv.writer(<span class="bu">file</span>, delimiter<span class="op">=</span><span class="st">','</span>, quotechar<span class="op">=</span><span class="st">'"'</span>)</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> page <span class="kw">in</span> <span class="bu">range</span>(page_start, page_count<span class="op">+</span><span class="dv">1</span>):</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>            page_url <span class="op">=</span> <span class="st">'http://www.chessgames.com/perl/chess.pl?page='</span> <span class="op">+</span> <span class="op">\</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>                <span class="bu">str</span>(page) <span class="op">+</span> <span class="st">'&amp;pid='</span> <span class="op">+</span> <span class="bu">str</span>(pid)</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>            page_resp <span class="op">=</span> requests.get(page_url, headers<span class="op">=</span>headers)</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">'</span><span class="ch">\t</span><span class="st">page = '</span>, page, <span class="st">'</span><span class="ch">\t</span><span class="st">url = '</span>, page_url,</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'</span><span class="ch">\t</span><span class="st">code = '</span>, page_resp.status_code)</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>            time.sleep(np.random.randint(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>            page_soup <span class="op">=</span> BeautifulSoup(page_resp.text, <span class="st">'lxml'</span>)</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>            games <span class="op">=</span> page_soup.select(</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>                <span class="st">'tr[bgcolor="#FFFFFF"],tr[bgcolor="#EEDDCC"]'</span>)</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> game <span class="kw">in</span> games:</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>                data <span class="op">=</span> game.select(<span class="st">'td'</span>)</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>                game_url <span class="op">=</span> data[<span class="dv">0</span>].find(<span class="st">"a"</span>)[<span class="st">'href'</span>]</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>                game_id <span class="op">=</span> re.findall(<span class="st">'(\d+)'</span>, game_url)[<span class="dv">0</span>]</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>                result <span class="op">=</span> data[<span class="dv">2</span>].text.strip()</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>                moves <span class="op">=</span> data[<span class="dv">3</span>].text.strip()</span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>                year <span class="op">=</span> data[<span class="dv">4</span>].text.strip()</span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>                tournament <span class="op">=</span> data[<span class="dv">5</span>].text.strip()</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>                eco <span class="op">=</span> data[<span class="dv">6</span>].select(<span class="st">'a'</span>)[<span class="dv">0</span>].text.strip()</span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>                opening_move <span class="op">=</span> re.findall(</span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>                    <span class="st">'^[A-E0-9][0-9]</span><span class="sc">{2}</span><span class="st"> (.*)'</span>, data[<span class="dv">6</span>].text.strip())[<span class="dv">0</span>]</span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>                game_resp <span class="op">=</span> requests.get(</span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>                    <span class="st">'http://www.chessgames.com'</span> <span class="op">+</span> game_url, headers<span class="op">=</span>headers)</span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>                time.sleep(np.random.randint(<span class="dv">1</span>, <span class="dv">2</span>))</span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>                game_soup <span class="op">=</span> BeautifulSoup(game_resp.text, <span class="st">'lxml'</span>)</span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>                players <span class="op">=</span> game_soup.select(<span class="st">'center'</span>)[<span class="dv">0</span>].select(<span class="st">'a'</span>)</span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>                <span class="cf">try</span>:</span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>                    white_id <span class="op">=</span> re.findall(<span class="st">'(\d+)'</span>, players[<span class="dv">0</span>][<span class="st">'href'</span>])[<span class="dv">0</span>]</span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>                <span class="cf">except</span>:</span>
-<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>                    white_id <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>                <span class="cf">try</span>:</span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>                    black_id <span class="op">=</span> re.findall(<span class="st">'(\d+)'</span>, players[<span class="dv">1</span>][<span class="st">'href'</span>])[<span class="dv">0</span>]</span>
-<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>                <span class="cf">except</span>:</span>
-<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>                    black_id <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>                tup <span class="op">=</span> (game_id, white_id, black_id, result,</span>
-<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>                       moves, year, tournament, eco, opening_move)</span>
-<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>                <span class="cf">try</span>:</span>
-<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>                    csv_writer.writerow(tup)</span>
-<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>                <span class="cf">except</span>:</span>
-<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">print</span>(<span class="st">'</span><span class="ch">\t\t</span><span class="st">gameID: '</span>, game_id, <span class="st">'</span><span class="ch">\t</span><span class="st">Write to CSV failed'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>All player csv files were then inserted to the <code>games</code> table of the <code>chessgames.db</code> database using the <code>read_csvs</code> function:</p>
-<div class="cell" data-execution_count="7">
-<details>
-<summary>Function description for read_csvs()</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> read_csvs(conn):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Read all player csvs and save them to the games table</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    gid_failed <span class="op">=</span> []</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    cur <span class="op">=</span> conn.cursor()</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> file_name <span class="kw">in</span> glob.glob(<span class="st">'./games/*.csv'</span>):</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> <span class="bu">open</span>(file_name) <span class="im">as</span> <span class="bu">file</span>:</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(file_name)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>            reader <span class="op">=</span> csv.reader(<span class="bu">file</span>, delimiter <span class="op">=</span> <span class="st">','</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> line <span class="kw">in</span> reader:</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                <span class="cf">try</span>:</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                    cur.execute(<span class="st">'''INSERT INTO games VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);'''</span>, line)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">print</span>(<span class="st">'</span><span class="ch">\t\t</span><span class="st">gameID: '</span>, line[<span class="dv">0</span>], <span class="st">'</span><span class="ch">\t</span><span class="st">Insert success!'</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>                    gid_failed.append(line[<span class="dv">0</span>])</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">print</span>(<span class="st">'</span><span class="ch">\t\t</span><span class="st">gameID: '</span>, line[<span class="dv">0</span>], <span class="st">'</span><span class="ch">\t</span><span class="st">Insert Failed!</span><span class="ch">\t</span><span class="st">'</span>, e)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> gid_failed</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>Now, let us examine the games dataframe by calling it with the <code>read_sql</code> Pandas module.</p>
-<div class="cell" data-execution_count="8">
-<details>
-<summary>Accessing the database.</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_games <span class="op">=</span> pd.read_sql(<span class="st">"""SELECT * FROM games"""</span>, conn)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>df_games.columns <span class="op">=</span> ([<span class="st">'Game ID'</span>, <span class="st">'White Player ID'</span>, <span class="st">'Black Player ID'</span>,</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                     <span class="st">'Result'</span>, <span class="st">'Number of Moves'</span>, <span class="st">'Year'</span>, <span class="st">'Tournament'</span>, <span class="st">'ECO'</span>,</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                     <span class="st">'Opening Move'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>Below you can see that <strong>Table 4</strong> and <strong>Table 5</strong> shows the summary statistics for the <code>players</code> and <code>games</code> table. <strong>8,574 players</strong> and <strong>50,087</strong> games were inserted into the chessgames database.</p>
-<table class="table">
-<caption>Table 4: <code>players</code> table summary statistics</caption>
-<thead>
-<tr class="header">
-<th>Statistic</th>
-<th>Rating</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>count</td>
-<td>8574.000000</td>
-</tr>
-<tr class="even">
-<td>mean</td>
-<td>2361.279566</td>
-</tr>
-<tr class="odd">
-<td>std</td>
-<td>184.344627</td>
-</tr>
-<tr class="even">
-<td>min</td>
-<td>1379.000000</td>
-</tr>
-<tr class="odd">
-<td>25%</td>
-<td>2268.000000</td>
-</tr>
-<tr class="even">
-<td>50%</td>
-<td>2389.000000</td>
-</tr>
-<tr class="odd">
-<td>75%</td>
-<td>2479.000000</td>
-</tr>
-<tr class="even">
-<td>max</td>
-<td>2882.000000</td>
-</tr>
-</tbody>
-</table>
-<table class="table">
-<caption>Table 5: <code>games</code> table summary statistics</caption>
-<thead>
-<tr class="header">
-<th>Statistic</th>
-<th>Number of Moves</th>
-<th>Year</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>count</td>
-<td>50087.000000</td>
-<td>50087.000000</td>
-</tr>
-<tr class="even">
-<td>mean</td>
-<td>42.893485</td>
-<td>2005.074950</td>
-</tr>
-<tr class="odd">
-<td>std</td>
-<td>17.288031</td>
-<td>11.643902</td>
-</tr>
-<tr class="even">
-<td>min</td>
-<td>0.000000</td>
-<td>1953.000000</td>
-</tr>
-<tr class="odd">
-<td>25%</td>
-<td>31.000000</td>
-<td>2000.000000</td>
-</tr>
-<tr class="even">
-<td>50%</td>
-<td>41.000000</td>
-<td>2008.000000</td>
-</tr>
-<tr class="odd">
-<td>75%</td>
-<td>52.000000</td>
-<td>2014.000000</td>
-</tr>
-<tr class="even">
-<td>max</td>
-<td>255.000000</td>
-<td>2019.000000</td>
-</tr>
-</tbody>
-</table>
-<h2 class="anchored" data-anchor-id="these-are-standard-imports">
-Results
-</h2>
-<p><strong>Figure 1</strong> below shows the top 10 opening moves used by the thirty highest-ranked chess players. 356 games, or nearly 2.6% of the games won by the top players, were opened using the Sicilian, Najdorf (ECO = B90) move.</p>
-<p>However, looking at the top opening moves per player as seen in <strong>Figure 3</strong>, the Sicilian, Najdorf (ECO = B90) move does not appear as the top move for most of the players. For instance, Magnus Carlsen, the highest-ranked player, has the Ruy Lopez, Berlin Defense as his top opening move. As shown in <strong>Table 7</strong>, Only 7 of the top 30 players have the Sicilian, Najdorf move as their top winning opening move. Also, if we look at the top 5 highest-rated players, 3 of 5 of them have the Ruy Lopez, Berlin Defense move as the top winning move.</p>
-<div class="cell" data-execution_count="9">
-<details>
-<summary>Function to see top 10 opening moves and % won.</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> pd.read_sql(<span class="st">"""SELECT g.white_pid, p.fname || ' ' || </span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="st">                            p.lname, p.rating, g.eco, g.opening_move, count(*) </span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">                            FROM games g</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">                          INNER JOIN players p on g.white_pid = p.pid</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">                          WHERE g.white_pid IN (SELECT pid FROM players </span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="st">                                              WHERE rating != ''</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">                                              ORDER BY rating DESC limit 30)</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="st">                          AND g.result = '1-0'</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="st">                          GROUP BY g.white_pid, g.eco, g.opening_move</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="st">                          ORDER BY p.rating DESC, count(*) DESC"""</span>, conn)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>df_top_moves.columns <span class="op">=</span> [<span class="st">'PID'</span>, <span class="st">'Name'</span>, <span class="st">'Rating'</span>,</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                        <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>, <span class="st">'Number of Games Won'</span>]</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> df_top_moves.groupby([<span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>])[</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Number of Games Won'</span>].<span class="bu">sum</span>().to_frame()</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> df_top_moves.sort_values(<span class="st">'Number of Games Won'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>df_top_moves.reset_index(inplace<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>df_top_moves[<span class="st">'</span><span class="sc">% o</span><span class="st">f Games Won'</span>] <span class="op">=</span> (</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    df_top_moves[<span class="st">'Number of Games Won'</span>] <span class="op">/</span> df_top_moves[<span class="st">'Number of Games Won'</span>].<span class="bu">sum</span>() <span class="op">*</span> <span class="dv">100</span>)</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>df_top_moves.head(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<table class="table">
-<caption>Table 6: Top Opening Moves of the 30 highest-rated players</caption>
-<colgroup>
-<col style="width: 9%">
-<col style="width: 37%">
-<col style="width: 29%">
-<col style="width: 24%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>ECO</th>
-<th>Top Opening Move</th>
-<th>Number of Games Won</th>
-<th>% of Games Won</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>B90</td>
-<td>Sicilian, Najdorf</td>
-<td>356</td>
-<td>2.566321</td>
-</tr>
-<tr class="even">
-<td>A07</td>
-<td>King’s Indian Attack</td>
-<td>250</td>
-<td>1.802191</td>
-</tr>
-<tr class="odd">
-<td>B12</td>
-<td>Caro-Kann Defense</td>
-<td>227</td>
-<td>1.63639</td>
-</tr>
-<tr class="even">
-<td>C78</td>
-<td>Ruy Lopez</td>
-<td>206</td>
-<td>1.485006</td>
-</tr>
-<tr class="odd">
-<td>C42</td>
-<td>Petrov Defense</td>
-<td>205</td>
-<td>1.477797</td>
-</tr>
-<tr class="even">
-<td>C11</td>
-<td>French</td>
-<td>204</td>
-<td>1.470588</td>
-</tr>
-<tr class="odd">
-<td>E15</td>
-<td>Queen’s Indian</td>
-<td>203</td>
-<td>1.463379</td>
-</tr>
-<tr class="even">
-<td>A04</td>
-<td>Reti Opening</td>
-<td>192</td>
-<td>1.384083</td>
-</tr>
-<tr class="odd">
-<td>D37</td>
-<td>Queen’s Gambit Declined</td>
-<td>186</td>
-<td>1.34083</td>
-</tr>
-<tr class="even">
-<td>C65</td>
-<td>Ruy Lopez, Berlin Defense</td>
-<td>176</td>
-<td>1.268743</td>
-</tr>
-</tbody>
-</table>
-<div class="cell" data-execution_count="10">
-<details>
-<summary>Code to generate the Top Opening Moves.</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(dpi<span class="op">=</span><span class="dv">150</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df_top_moves[<span class="dv">10</span>::<span class="op">-</span><span class="dv">1</span>].plot.barh(<span class="st">'Top Opening Move'</span>,</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                               <span class="st">'</span><span class="sc">% o</span><span class="st">f Games Won'</span>, ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">'#BF5209'</span>,</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                               legend<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'</span><span class="sc">% o</span><span class="st">f Games Won'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<!-- ![FIGURE 1:Top Opening Moves of the 30 highest-rated chess players](image-outputs/image1-topmoves.png) -->
-<p>Now, let us view the top opening moves per top player (top 10 players)</p>
-<div class="cell" data-execution_count="11">
-<details>
-<summary>Code to generate the Top Opening Moves for top players</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> pd.read_sql(<span class="st">"""SELECT g.white_pid, p.fname || ' ' || </span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">                            p.lname, p.rating, g.eco, g.opening_move, count(*) </span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">                            FROM games g</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">                          INNER JOIN players p on g.white_pid = p.pid</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">                          WHERE g.white_pid IN (SELECT pid FROM players </span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="st">                                              WHERE rating != ''</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="st">                                              ORDER BY rating DESC limit 30)</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="st">                          AND g.result = '1-0'</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="st">                          GROUP BY g.white_pid, g.eco</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="st">                          ORDER BY p.rating DESC, count(*) DESC"""</span>, conn)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>df_top_moves.columns <span class="op">=</span> [<span class="st">'PID'</span>, <span class="st">'Name'</span>, <span class="st">'Rating'</span>, <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>, <span class="st">'Number of Games Won'</span>]</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> (df_top_moves</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>                .groupby([<span class="st">'Rating'</span>, <span class="st">'PID'</span>, <span class="st">'Name'</span>, <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>])</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>                [<span class="st">'Number of Games Won'</span>].<span class="bu">sum</span>().to_frame())</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> (df_top_moves.reset_index()</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>                .sort_values([<span class="st">'Rating'</span>, <span class="st">'Number of Games Won'</span>],</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>                             ascending<span class="op">=</span>[<span class="va">False</span>, <span class="va">False</span>])</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>                .set_index([<span class="st">'PID'</span>, <span class="st">'Rating'</span>, <span class="st">'Name'</span>, <span class="st">'ECO'</span>, <span class="st">'Top Opening Move'</span>]))</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>df_top_moves <span class="op">=</span> df_top_moves.groupby(level<span class="op">=</span><span class="dv">0</span>).head(<span class="dv">10</span>)</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>df_top_moves.reset_index(inplace<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>df_top_moves</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> df_top_moves[<span class="st">'Name'</span>].unique()</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> names:</span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots()</span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> df_top_moves[df_top_moves[<span class="st">'Name'</span>] <span class="op">==</span> name]</span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    df[<span class="dv">10</span>::<span class="op">-</span><span class="dv">1</span>].plot.barh(<span class="st">'Top Opening Move'</span>, <span class="st">'Number of Games Won'</span>,</span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>                         ax<span class="op">=</span>ax, color<span class="op">=</span><span class="st">'#BF5209'</span>, legend<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    ax.set_title(name)</span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">'Number of Games Won'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="fig-top" class="quarto-layout-panel">
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<div class="quarto-layout-row quarto-layout-valign-top">
-<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: center;">
-<p>Top Winning Moves Per Top Player</p>
-</div>
-</div>
-<p></p><figcaption class="figure-caption">Figure&nbsp;1: <strong>?(caption)</strong></figcaption><p></p>
+<p><img src="image-outputs/1-TILoutput.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 1: (1) Frequency distribution of the top 15 words in the Reddit sample data, and (b) the corresponding wordcloud. Top words include TIL (Today I learned) and the names of 2016 US Presidential Aspirants (Donald Trump, Bernie Sanders, Hillary Clinton)</figcaption><p></p>
 </figure>
 </div>
+<h3 class="anchored">
+Vectorization/Bag-of-words representation
+</h3>
+<p>To uncover the other underlying themes apart from the 2016 U.S. Presidential Election, unsupervised clustering via k-means is performed on the collection of Reddit titles. To do this, the topics need to be <em>vectorized</em> or be converted to their bag-of-words representation. The <code>TfidfVectorizer</code> vectorizer was used to perform the vectorization.</p>
+<p>The <code>TFidfVectorizer</code> also performs further cleaning of the data by removing both frequent words and rare words. <em>Stopwords</em>, or words that appear too frequently in the English language (e.g., the, a, an, and, or), were dropped from the corpus. Reddit-specific stopwords, or words that appear in more than 70% of the titles, were also ignored by setting the <code>max_df</code> parameter of <code>TFidfVectorizer</code> to <span class="math inline">\(0.7\)</span>.</p>
+<p>Rare words, or words that appeared in less than 0.1% of the Reddit titles, were also excluded from the corpus. This was implemented by setting the <code>min_df</code> parameter of the <code>TFidfVectorizer</code> to <span class="math inline">\(0.001\)</span>.</p>
+<p><em>n</em>-grams of word lengths between <span class="math inline">\(n=1\)</span> and <span class="math inline">\(n=3\)</span> were extracted as part of the vocabulary. This range of n-grams was chosen in order to preserve the context of certain phrases such as “Hillary Clinton” (<span class="math inline">\(n=2\)</span>), “Donald Trump” (<span class="math inline">\(n=2\)</span>), and “Happy new year” (<span class="math inline">\(n=3\)</span>)</p>
+<div class="cell" data-execution_count="5">
+<details>
+<summary>Using a TFIDF Vectorizer</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a TF-IDF Vectorizer</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>tfidf_vectorizer <span class="op">=</span> TfidfVectorizer(token_pattern<span class="op">=</span><span class="vs">r'(?u)\b\w(?:\w|\-)+\b'</span>, </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                                   stop_words<span class="op">=</span>stopword, </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                                   ngram_range<span class="op">=</span>(<span class="dv">1</span>,<span class="dv">3</span>), min_df<span class="op">=</span><span class="fl">0.001</span>, max_df<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a Bag-Of-Words</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>bow <span class="op">=</span> tfidf_vectorizer.fit_transform(docs)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Identifying the vocabulary</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>vocabulary <span class="op">=</span> tfidf_vectorizer.get_feature_names()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>After vectorization, the sample of Reddit titles has <strong>1,655 unique items</strong> in its vocabulary:</p>
+<p>Sample vocabulary items are shown below:</p>
+<pre><code>[   'years old',
+    'yesterday',
+    'york',
+    'york times',
+    'young',
+    'youtube',
+    'zealand',
+    'zelda',
+    'ăn',
+    'طريقة']</code></pre>
+<h3 class="anchored">
+Dimensionality reduction using Latent Semantics Analysis (LSA)
+</h3>
+<p>The resulting bag of words is a 5848 by 1655 matrix:</p>
+<pre><code>print("\t Dimensions: ", bow.shape)
+Dimensions:  (5848, 1655)</code></pre>
+<p>It would be computationally expensive to perform clustering on a dataset this large. To minimize computational power, dimensionality reduction was performed on the vectorized data via <strong>latent semantic analysis (LSA)</strong>. This was implemented using the <code>TruncatedSVD</code> class of <code>sklearn</code>.</p>
+<p>As a general rule for LSA, fewer dimensions allow for broader comparisons of the themes contained in a collection of text, while a higher number of dimensions enable more specific comparisons of themes. A dimesionality between 50 and 1,000 are suitable depending on the size and nature of the document collection, with <span class="math inline">\(300 \pm 50\)</span> the optimum value. Unlike in other dimensionality reduction techniques such as principal component analysis (PCA), checking the proportion of variance retained to determine the optimal dimensionality is <strong>NOT</strong> applicable to LSA.</p>
+<p>In this study, <span class="math inline">\(n_{components} = 100\)</span> is used to extract the underlying themes.</p>
+<h4 class="anchored">
+Reduced dimensionality
+</h4>
+<p>For the purposes of this study, we reduced the dimensionality of the Reddit sample data to <strong>100 components</strong>. The transformed Reddit dataset is shown below. Numerous subclusters are revealed, confirming that there are multiple categories or themes in the dataset.</p>
+<div class="cell" data-execution_count="6">
+<details>
+<summary>Using a TruncatedSVD to reduce the number of components to 100 components, then getting bag of words, the using TSNE</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>tsvd1 <span class="op">=</span> TruncatedSVD(n_components<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>normalizer <span class="op">=</span> Normalizer(copy<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>lsa1 <span class="op">=</span> make_pipeline(tsvd1, normalizer)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Getting the bag of words</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>bow_tsvd1 <span class="op">=</span> lsa1.fit_transform(bow)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Applying a TSNE model</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>tsne <span class="op">=</span> TSNE(n_components<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">1704</span>, n_iter<span class="op">=</span><span class="dv">1500</span>, n_iter_without_progress<span class="op">=</span><span class="dv">500</span>, perplexity<span class="op">=</span><span class="dv">50</span>, learning_rate<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>bow_tsne1 <span class="op">=</span> tsne.fit_transform(bow_tsvd1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now, let’s make a graph on the TSNE model’s bag of words. Below you’ll see it flatted TSNE of the bag of words.</p>
+<div class="cell" data-execution_count="7">
+<details>
+<summary>Creating the plot of the TSNE.</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(dpi <span class="op">=</span> <span class="dv">100</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ax.scatter(bow_tsne1[:,<span class="dv">0</span>], bow_tsne1[:,<span class="dv">1</span>], alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="va">True</span>, marker<span class="op">=</span><span class="st">'o'</span>, s<span class="op">=</span><span class="dv">8</span>, c<span class="op">=</span><span class="st">"#ff4500"</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/2-TSNE.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 2: Reddit topics visualized in two dimensions using TSNE.</figcaption><p></p>
+</figure>
+</div>
+<h3 class="anchored">
+Representative-based clustering using <em>k</em>-means
+</h3>
+<h4 class="anchored">
+<ol type="1">
+<li>Selecting the optimal number of clusters <code>k</code>
+</li></ol></h4>
+
+<p>To determine the optimal number of clusters, we perform k-means clustering for different values of the cluster count <span class="math inline">\(k\)</span> from <span class="math inline">\(k=2\)</span> to <span class="math inline">\(k=20\)</span>. This range of values was chosen to keep the clustering parsimonious.</p>
+<p>Several internal validation measures were computed for each value of <span class="math inline">\(k\)</span>. The internal validation measures that were used are (a) intracluster to intercluster distance ratio, (b) Calinski-Harabasz score (c) Silhouette coefficient, and (d) sum of square distances to centroids coefficient.</p>
+<p>The optimal value of <span class="math inline">\(k\)</span> is then chosen based on the following criteria:</p>
+<ol type="1">
+<li>Sum-of-square distance to centroid is minimized</li>
+<li>Calinski-Harabasz index is maximized</li>
+<li>Intracluster to intercluster distance ratio is minimized</li>
+<li>Silhouette coefficient is maximized</li>
+</ol>
+<p>Plotted below are the values of the internal validation criteria for values of <span class="math inline">\(k\)</span> between 2 and 20. <strong><span class="math inline">\(k = 10\)</span></strong> and <strong><span class="math inline">\(k = 16\)</span></strong> are good candidates for the number of clusters because for these values, the intracluster to intercluster distance ratio has a local minima, and the silhouette coefficient has a relatively high value.</p>
+<div class="cell" data-execution_count="8">
+<details>
+<summary>Function for computing intracluster to intercluster distance ratio</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> intra_to_inter(X, y, dist, r):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Compute intracluster to intercluster distance ratio</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">    X : array</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">        Design matrix with each row corresponding to a point</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">    y : array</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co">        Class label of each point</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">    dist : callable</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">        Distance between two points. It should accept two arrays, each </span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">        corresponding to the coordinates of each point</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">    r : integer</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">        Number of pairs to sample</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co">    -------</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co">    ratio : float</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co">        Intracluster to intercluster distance ratio</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    P <span class="op">=</span> []</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    Q <span class="op">=</span> []</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    p<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    q<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    np.random.seed(<span class="dv">11</span>)</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> np.random.choice(<span class="bu">range</span>(<span class="dv">0</span>,<span class="bu">len</span>(X)), (r,<span class="dv">2</span>), replace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> a <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,<span class="bu">len</span>(d)):</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span>  d[a][<span class="dv">0</span>] <span class="op">==</span> d[a][<span class="dv">1</span>]:</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> y[d[a][<span class="dv">0</span>]] <span class="op">==</span> y[d[a][<span class="dv">1</span>]]:</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>            P.append(dist(X[d[a][<span class="dv">0</span>]],X[d[a][<span class="dv">1</span>]]))</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>            p<span class="op">+=</span><span class="dv">1</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>            Q.append(dist(X[d[a][<span class="dv">0</span>]],X[d[a][<span class="dv">1</span>]]))</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>            q<span class="op">+=</span><span class="dv">1</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(P) <span class="op">==</span> <span class="dv">0</span> <span class="kw">or</span> <span class="bu">len</span>(Q) <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>        ratio <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>        ratio <span class="op">=</span> (np.<span class="bu">sum</span>(P)<span class="op">/</span><span class="bu">len</span>(P))<span class="op">/</span>(np.<span class="bu">sum</span>(Q)<span class="op">/</span><span class="bu">len</span>(Q))</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ratio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="9">
+<details>
+<summary>Function to create the clusters, cluster labels (and scores of internal validation values)</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cluster_range(X, clusterer, k_start<span class="op">=</span><span class="dv">2</span>, k_stop<span class="op">=</span><span class="dv">16</span>, actual<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Accepts the design matrix, the clustering object, the initial and final </span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">    values to step through, and, optionally, actual labels. It should return a</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">    dictionary of the cluster labels, internal validation values and, if</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">    actual labels is given, external validation values, for every k.</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">    X : design matrix</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">    clusterer : clustering object</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">    k_start : initial value of clusters</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">    k_stop : final value of clusters</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">    actual : actual labels</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">    -------</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co">    dictionary</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    validation_dict <span class="op">=</span> {<span class="st">"chs"</span>: [],</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"iidrs"</span>: [],</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"inertias"</span>: [],</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"scs"</span>: [],</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"ys"</span>: []</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>                       }</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> actual <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>        validation_dict <span class="op">=</span> {<span class="st">"chs"</span>: [],</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"iidrs"</span>: [],</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"inertias"</span>: [],</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"scs"</span>: [],</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"ys"</span>: [],</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"amis"</span>: [],</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"ars"</span>: [],</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"ps"</span>: []</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>                           }</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(k_start, k_stop<span class="op">+</span><span class="dv">1</span>):</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>        clusterer.n_clusters <span class="op">=</span> k</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>        np.random.seed(<span class="dv">11</span>)</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        y_predict <span class="op">=</span> clusterer.fit_predict(X)</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>        validation_dict[<span class="st">"chs"</span>].append(calinski_harabaz_score(X, y_predict))</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>        validation_dict[<span class="st">"iidrs"</span>].append(</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>            intra_to_inter(X, y_predict, euclidean, <span class="dv">50</span>))</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>        validation_dict[<span class="st">"inertias"</span>].append(clusterer.inertia_)</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>        validation_dict[<span class="st">"scs"</span>].append(silhouette_score(X, y_predict))</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>        validation_dict[<span class="st">"ys"</span>].append(y_predict)</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> actual <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>            validation_dict[<span class="st">"amis"</span>].append(</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>                adjusted_mutual_info_score(actual, y_predict))</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>            validation_dict[<span class="st">"ars"</span>].append(</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>                adjusted_rand_score(actual, y_predict))</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>            validation_dict[<span class="st">"ps"</span>].append(purity(actual, y_predict))</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> validation_dict</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<pre><code>kmeans_dict1 = cluster_range(
+    # bag of words results
+    bow_tsvd1, 
+    # using a k-means clusterer
+    KMeans(random_state=1704, n_init=20, max_iter=1000, tol=1e-6), 
+    2,
+    20)</code></pre>
+<div class="cell" data-execution_count="10">
+<details>
+<summary>Function to plot internal validation values</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_internal(inertias, chs, iidrs, scs):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Plot internal validation values</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">4</span>,dpi<span class="op">=</span><span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">2</span>))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    ks <span class="op">=</span> np.arange(<span class="dv">2</span>, <span class="bu">len</span>(inertias)<span class="op">+</span><span class="dv">2</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].plot(ks, inertias, <span class="st">'-o'</span>, label<span class="op">=</span><span class="st">'SSE'</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">1</span>].plot(ks, chs, <span class="st">'-ro'</span>, label<span class="op">=</span><span class="st">'CH'</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].set_xlabel(<span class="st">'$k$'</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">1</span>].set_xlabel(<span class="st">'$k$'</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">0</span>].set_title(<span class="st">'SSE'</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">1</span>].set_title(<span class="st">'CH'</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">2</span>].plot(ks, iidrs, <span class="st">'-go'</span>, label<span class="op">=</span><span class="st">'Inter-intra'</span>)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">3</span>].plot(ks, scs, <span class="st">'-ko'</span>, label<span class="op">=</span><span class="st">'Silhouette coefficient'</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">2</span>].set_xlabel(<span class="st">'$k$'</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">2</span>].set_title(<span class="st">'Inter-intra'</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">3</span>].set_xlabel(<span class="st">'$k$'</span>)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">3</span>].set_title(<span class="st">'Silhouette coefficient'</span>)</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ax</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Let’s plot the interal validation values</p>
+<pre><code>plot_internal(kmeans_dict1['inertias'], kmeans_dict1['chs'], 
+    kmeans_dict1['iidrs'], kmeans_dict1['scs']);</code></pre>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/3-internal-validation.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 3: Plots of the various internal validation measures for <span class="math inline">\(k=2\)</span> to <span class="math inline">\(k=20\)</span>. <span class="math inline">\(k=10\)</span> and <span class="math inline">\(k=16\)</span> were chosen because of the low intercluster-intracluster ration and the high silhouette coefficients for those values.</figcaption><p></p>
+</figure>
+</div>
+<h4 class="anchored">
+<ol start="2" type="1">
+<li><code>k = 10</code>
+</li></ol></h4>
+
+<div class="cell" data-execution_count="11">
+<details>
+<summary>Code of setting k-means k=10</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>n1 <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>kmeans1 <span class="op">=</span> KMeans(n_clusters<span class="op">=</span>n1, random_state<span class="op">=</span><span class="dv">1704</span>, n_init<span class="op">=</span><span class="dv">20</span>, max_iter<span class="op">=</span><span class="dv">1000</span>, tol<span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>y_predict_kmeans1 <span class="op">=</span> kmeans1.fit_predict(bow_tsvd1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><span class="math inline">\(k\)</span>-means clustering was performed on the Reddit sample titles using 10 clusters. The resulting clusters and the cluster size distribution are shown below. The clusters are relatives balanced in terms of cluster size, with the exception of one cluster (cluster 5) which contains more than 2500 Reddit titles.</p>
+<div class="cell" data-execution_count="12">
+<details>
+<summary>Creating the plot and clusters</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">2</span>, dpi <span class="op">=</span> <span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">3</span>))</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].scatter(bow_tsne1[:,<span class="dv">0</span>], bow_tsne1[:,<span class="dv">1</span>], c<span class="op">=</span>y_predict_kmeans1, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="va">True</span>, marker<span class="op">=</span><span class="st">'o'</span>, s<span class="op">=</span><span class="dv">8</span>)<span class="op">;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> Counter(y_predict_kmeans1)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>labels, values <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>counts.items())</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>indSort <span class="op">=</span> np.argsort(values)[::]</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> np.array(labels)[indSort]</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> np.array(values)[indSort]</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>indexes <span class="op">=</span> np.arange(<span class="bu">len</span>(labels))</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>bar_width <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].barh(indexes, values, color<span class="op">=</span><span class="st">'#ff4500'</span>)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_xlabel(<span class="st">'Cluster size'</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_ylabel(<span class="st">'Cluster labels'</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_yticks(indexes <span class="op">+</span> bar_width)<span class="op">;</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_yticklabels(labels)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/4-clusters10.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 4: Resulting clustering for <span class="math inline">\(n=10\)</span>, and the cluster size distribution per cluster. The clusters are relatives balanced in terms of cluster size, with the exception of one cluster (cluster 5) which contains more than 2500 Reddit titles.</figcaption><p></p>
+</figure>
+</div>
+<p>To understand the theme or category of each cluster, the <strong>top words</strong> or the most frequent words for each cluster was obtained. Shown below are the top 10 most occurring words per cluster, and the corresponding wordclouds.</p>
+<div class="cell" data-execution_count="13">
+<details>
+<summary>Code to see the top 10 most occuring words per cluster</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> tfidf_vectorizer.get_feature_names()</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> np.dot(kmeans1.cluster_centers_, tsvd1.components_)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> np.<span class="bu">abs</span>(weights)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">2</span>,<span class="dv">5</span>, dpi<span class="op">=</span><span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">16</span>,<span class="dv">5</span>))</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>plt.subplots_adjust(wspace<span class="op">=</span><span class="fl">1.1</span>, hspace<span class="op">=</span><span class="fl">.8</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(kmeans1.n_clusters):</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> np.argsort(weights[i])[<span class="op">-</span><span class="dv">10</span>:][::]</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    top_words <span class="op">=</span> [features[index] <span class="cf">for</span> index <span class="kw">in</span> indices]</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    values <span class="op">=</span> weights[i,indices]</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> np.arange(<span class="bu">len</span>(top_words))</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    bar_width <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">5</span>][i<span class="op">%</span><span class="dv">5</span>].barh(indices, values, color<span class="op">=</span><span class="st">'#ff4500'</span>)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">5</span>][i<span class="op">%</span><span class="dv">5</span>].set_xlabel(<span class="st">'Weight'</span>)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">5</span>][i<span class="op">%</span><span class="dv">5</span>].set_ylabel(<span class="st">'Top words'</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">5</span>][i<span class="op">%</span><span class="dv">5</span>].set_yticks(indexes <span class="op">+</span> bar_width)<span class="op">;</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">5</span>][i<span class="op">%</span><span class="dv">5</span>].set_yticklabels(top_words)<span class="op">;</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">5</span>][i<span class="op">%</span><span class="dv">5</span>].set_title(<span class="st">'Cluster '</span><span class="op">+</span> <span class="bu">str</span>(i<span class="op">+</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/5-topwords.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 5: Top 10 most occuring words per cluster (<span class="math inline">\(k=10\)</span>)</figcaption><p></p>
+</figure>
+</div>
+</div>
+<div class="cell" data-execution_count="14">
+<details>
+<summary>Code of placing a Reddit mask wordcloud</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> np.array(Image.<span class="bu">open</span>(<span class="st">'Icon-Reddit1.png'</span>))</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>topic <span class="op">=</span> [<span class="st">'TIL'</span>, <span class="st">'Apartment/Rent'</span>, <span class="st">'New Year'</span>, <span class="st">'Iowa Caucus'</span>, <span class="st">'Food'</span>, <span class="st">'Technology'</span>, <span class="st">'Donald Trump'</span>, <span class="st">'Bernie Sanders'</span>, <span class="st">'Advise-seeking'</span>, <span class="st">'Hillary Clinton'</span>]</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">2</span>,<span class="dv">5</span>,dpi<span class="op">=</span><span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">16</span>,<span class="dv">4</span>))</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>plt.subplots_adjust(wspace<span class="op">=</span><span class="fl">.2</span>, hspace<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ctr <span class="kw">in</span> <span class="bu">range</span>(kmeans1.n_clusters):</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> [i <span class="cf">for</span> i, x <span class="kw">in</span> <span class="bu">enumerate</span>(y_predict_kmeans1) <span class="cf">if</span> x <span class="op">==</span> ctr]</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    wordcloud <span class="op">=</span> WordCloud(background_color<span class="op">=</span><span class="st">"white"</span>, max_words<span class="op">=</span><span class="dv">100</span>, min_font_size<span class="op">=</span><span class="dv">8</span>, mask<span class="op">=</span>mask, </span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                          prefer_horizontal<span class="op">=</span><span class="fl">0.7</span>, colormap<span class="op">=</span><span class="st">'copper'</span>).generate(<span class="st">' '</span>.join([docs[index] <span class="cf">for</span> index <span class="kw">in</span> indices]))</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    ax[ctr<span class="op">//</span><span class="dv">5</span>][ctr<span class="op">%</span><span class="dv">5</span>].imshow(wordcloud, interpolation<span class="op">=</span><span class="st">'bilinear'</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    ax[ctr<span class="op">//</span><span class="dv">5</span>][ctr<span class="op">%</span><span class="dv">5</span>].axis(<span class="st">'off'</span>)<span class="op">;</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    ax[ctr<span class="op">//</span><span class="dv">5</span>][ctr<span class="op">%</span><span class="dv">5</span>].set_title(topic[ctr])<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/6-wordclouds.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 6: Wordcloud per cluster (<span class="math inline">\(k=10\)</span>)</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>Using <span class="math inline">\(k = 10\)</span>, the general categories listed below were revealed. Sample Reddit titles for each category are also shown.</p>
+<p>The clustering results show that <strong>Reddit is a very American-centric platform</strong>. Four of the ten topics are related to the 2016 U.S. Presidential Election, specifically on the Republican nominee Donald Trump, Democrat candidates Hillary Clinton and Bernie Sanders, and the Iowa caucuses, a biennial electoral event that marks the first major contest of the United States presidential primary season.</p>
+<p>Also, two of the topics are related to “advise”. This reveals that apart from discussing politics, Reddit users go to Reddit to ask help or seek advise from other Redditors, whethere it be technology-related or legal.</p>
+<p>Cluster topics:</p>
+<h5 class="anchored">
+TIL (Today I Learned)
+</h5>
+<pre><code>[   'til maternal kisses are not effective in alleviating minor childhood '
+    'injuries (boo-boos): a randomized, controlled and blinded study.',
+    'til goldman sachs did a study in 2009 that estimated a unified korea '
+    'could boast an economy larger than france, germany, and even japan by '
+    '2050 with a gdp of $6 trillion.',
+    "til the justice league's martian manhunter was once addicted to cookies "
+    'and hulked out when deprived of them.']</code></pre>
+<h5 class="anchored">
+Apartment/rent-related topics
+</h5>
+<pre><code>[   'business telephone service',
+    'illegal towing from apartment complex md.',
+    'can a landlord place a security camera in a communal space']</code></pre>
+<h5 class="anchored">
+“Happy new year”
+</h5>
+<pre><code>[   'new poll shows how far hillary has fallen with democrats',
+    'new zealand - new tenants wanting to take over internet account, isp is '
+    'refusing.',
+    'watch "best of maskedman - 2015 new year special." on youtube',
+    'happy new year reddit! :) i quit retirement, spent $250k in savings and '
+    '51 months (15,000 hours) to develop the new internet, owned by the '
+    'people, powered by humanity - the first company in history equally owned '
+    'by everybody alive! we are uniting the whole world into one!',
+    'til new yorkers at nye time square wear diapers and pads for lack of '
+    'porta potties']</code></pre>
+<h5 class="anchored">
+“Iowa caucuses”
+</h5>
+<pre><code>[   'the gop’s condemnation of ‘sanctuary cities’ is surprisingly awkward in '
+    'iowa',
+    "jesse watters questions sanders' young supporters in iowa",
+    '2016 iowa democratic caucus locations - get out there and caucus!!']</code></pre>
+<h5 class="anchored">
+Food
+</h5>
+<pre><code>[   'i have access to tons and tons of green onion tops,what can i make?',
+    'mexican chopped salad',
+    's&amp;amp;m restaurant in beijing caters to millennial’s basic instincts by '
+    'serving food &amp;amp; sex']</code></pre>
+<h5 class="anchored">
+Donald Trump
+</h5>
+<pre><code>[   "donald trump says he'll attract democrats; polls say that's unlikely",
+    'inside the clintons’ plan to defeat donald trump',
+    'hecklers disrupt trump rally, photographer shoved to the ground']</code></pre>
+<h5 class="anchored">
+Bernie Sanders
+</h5>
+<pre><code>[   '“it appears that mr. trump is getting nervous that working families are '
+    'catching on that his policies represent the interests of the billionaire '
+    'class against almost everyone else." - bernie sanders',
+    'killer mike: bernie sanders is the only candidate for black voters',
+    'bernie sanders: the most fascist candidate of all.']</code></pre>
+<h5 class="anchored">
+Food
+</h5>
+<pre><code>[   'i have access to tons and tons of green onion tops,what can i make?',
+    'mexican chopped salad',
+    's&amp;amp;m restaurant in beijing caters to millennial’s basic instincts by '
+    'serving food &amp;amp; sex']</code></pre>
+<h5 class="anchored">
+Advise-seeking
+</h5>
+<pre><code>[   'need an advice on gaming laptop',
+    'charged with dui 2 years and 4 months after i was involved in a single '
+    'car accident.',
+    "i'd like to buy the rights of a post on reddit to recreate in another "
+    'medium. how do i create a legal contract for this between strangers '
+    'online?',
+    'significant online food ordering trend',
+    'md - need advice evicting a suicidal/alcoholic tenant/roommate.']</code></pre>
+<h5 class="anchored">
+Hillary Clinton
+</h5>
+<pre><code>[   'semi automatic ropp capping machine / ropp cap sealing machine',
+    'state: hundreds of old clinton emails newly classified',
+    'georgia poll: clinton 70, sanders 23']</code></pre>
+<h4 class="anchored">
+<ol start="3" type="1">
+<li><code>k = 16</code>
+</li></ol></h4>
+
+<p>Let’s try with a <code>k=16</code></p>
+<div class="cell" data-execution_count="15">
+<details>
+<summary>Setting k-means to k=16</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>n2 <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>kmeans2 <span class="op">=</span> KMeans(n_clusters<span class="op">=</span>n2, random_state<span class="op">=</span><span class="dv">1704</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>y_predict_kmeans2 <span class="op">=</span> kmeans2.fit_predict(bow_tsvd1)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>,<span class="dv">2</span>, dpi <span class="op">=</span> <span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">3</span>))</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].scatter(bow_tsne1[:,<span class="dv">0</span>], bow_tsne1[:,<span class="dv">1</span>], c<span class="op">=</span>y_predict_kmeans2, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="va">True</span>, marker<span class="op">=</span><span class="st">'o'</span>, s<span class="op">=</span><span class="dv">8</span>)<span class="op">;</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> Counter(y_predict_kmeans2)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>labels, values <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>counts.items())</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>indSort <span class="op">=</span> np.argsort(values)[::]</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> np.array(labels)[indSort]</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>values <span class="op">=</span> np.array(values)[indSort]</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>indexes <span class="op">=</span> np.arange(<span class="bu">len</span>(labels))</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>bar_width <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].barh(indexes, values, color<span class="op">=</span><span class="st">'#ff4500'</span>)</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_xlabel(<span class="st">'Cluster size'</span>)</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_ylabel(<span class="st">'Cluster label'</span>)</span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_yticks(indexes <span class="op">+</span> bar_width)<span class="op">;</span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_yticklabels(labels)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/7-k16.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 7. Clustering and Cluster size distribution for <span class="math inline">\(k=16\)</span>)</figcaption><p></p>
+</figure>
+</div>
+<p>To understand the theme or category of each cluster, the <strong>top words</strong> or the most frequent words for each cluster was obtained. Shown below are the top 10 most occurring words per cluster, and the corresponding wordclouds.</p>
+<div class="cell" data-execution_count="16">
+<details>
+<summary>Code to see the top words per 16 clusters</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>features <span class="op">=</span> tfidf_vectorizer.get_feature_names()</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> np.dot(kmeans2.cluster_centers_, tsvd1.components_)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> np.<span class="bu">abs</span>(weights)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">4</span>,<span class="dv">4</span>, dpi<span class="op">=</span><span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">10</span>))</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>plt.subplots_adjust(wspace<span class="op">=</span><span class="fl">1.1</span>, hspace<span class="op">=</span><span class="fl">.8</span>)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(kmeans2.n_clusters):</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> np.argsort(weights[i])[<span class="op">-</span><span class="dv">10</span>:][::]</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    top_words <span class="op">=</span> [features[index] <span class="cf">for</span> index <span class="kw">in</span> indices]</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    values <span class="op">=</span> weights[i,indices]</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> np.arange(<span class="bu">len</span>(top_words))</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    bar_width <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">4</span>][i<span class="op">%</span><span class="dv">4</span>].barh(top_words, values, color<span class="op">=</span><span class="st">'#ff4500'</span>)</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">4</span>][i<span class="op">%</span><span class="dv">4</span>].set_xlabel(<span class="st">'Weight'</span>)</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">4</span>][i<span class="op">%</span><span class="dv">4</span>].set_ylabel(<span class="st">'Top words'</span>)</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a><span class="co">#    ax[i//4][i%4].set_yticks(indexes + bar_width);</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">4</span>][i<span class="op">%</span><span class="dv">4</span>].set_yticklabels(top_words)<span class="op">;</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    ax[i<span class="op">//</span><span class="dv">4</span>][i<span class="op">%</span><span class="dv">4</span>].set_title(<span class="st">'Cluster '</span><span class="op">+</span> <span class="bu">str</span>(i<span class="op">+</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/8-k16-words.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 8. Top 10 most frequest words per cluster (<span class="math inline">\(k=16\)</span>)</figcaption><p></p>
+</figure>
+</div>
+</div>
+<div class="cell" data-execution_count="17">
+<details>
+<summary>Code of placing a Reddit mask wordcloud for k=16</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>topics1 <span class="op">=</span> [<span class="st">'Tech support'</span>, <span class="st">'Clinton'</span>, <span class="st">'Trump'</span>, <span class="st">'Cluster 4'</span>, <span class="st">'Recipes'</span>, <span class="st">'TIL'</span>, <span class="st">'Aparment/Rent'</span>, <span class="st">'Technology'</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>           , <span class="st">'Sanders'</span>, <span class="st">'Food'</span>, <span class="st">'Cluster 11'</span>, <span class="st">'Car-related queries'</span>, <span class="st">'New Year'</span>, <span class="st">'Reaction Compilation'</span>, <span class="st">'Legal concerns'</span>, <span class="st">'Cluster 15'</span>]</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">4</span>,<span class="dv">4</span>,dpi<span class="op">=</span><span class="dv">100</span>, figsize<span class="op">=</span>(<span class="dv">16</span>,<span class="dv">12</span>))</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>plt.subplots_adjust(wspace<span class="op">=</span><span class="fl">0.2</span>, hspace<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ctr <span class="kw">in</span> <span class="bu">range</span>(kmeans2.n_clusters):</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    indices <span class="op">=</span> [i <span class="cf">for</span> i, x <span class="kw">in</span> <span class="bu">enumerate</span>(y_predict_kmeans2) <span class="cf">if</span> x <span class="op">==</span> ctr]</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    wordcloud <span class="op">=</span> WordCloud(background_color<span class="op">=</span><span class="st">"white"</span>, max_words<span class="op">=</span><span class="dv">100</span>, min_font_size<span class="op">=</span><span class="dv">8</span>, mask<span class="op">=</span>mask, </span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>                          prefer_horizontal<span class="op">=</span><span class="fl">0.6</span>, colormap<span class="op">=</span><span class="st">'copper'</span>).generate(<span class="st">' '</span>.join([docs[index] <span class="cf">for</span> index <span class="kw">in</span> indices]))</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    ax[ctr<span class="op">//</span><span class="dv">4</span>][ctr<span class="op">%</span><span class="dv">4</span>].imshow(wordcloud, interpolation<span class="op">=</span><span class="st">'bilinear'</span>)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>    ax[ctr<span class="op">//</span><span class="dv">4</span>][ctr<span class="op">%</span><span class="dv">4</span>].axis(<span class="st">'off'</span>)<span class="op">;</span></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>    ax[ctr<span class="op">//</span><span class="dv">4</span>][ctr<span class="op">%</span><span class="dv">4</span>].set_title(topics1[ctr])<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="column-page">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image-outputs/9-k16-wordclouds.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<p></p><figcaption class="figure-caption">FIGURE 9. Wordcloud per cluster (<span class="math inline">\(k=16\)</span>)</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>As the number of clusters was increased, the more specific themes emerge. The following themes emerged:</p>
+<h5 class="anchored">
+Technical Support
+</h5>
+<pre><code>[   'smoothly solution for the canon printer 1-877-776-4348',
+    'follow these step and escan antivirus easily',
+    'norton antivirus technical support phone number',
+    'itech logik | uk microsoft help desk phone number',
+    'til tupak shakur became the first artist to have an album at number one '
+    'on the billboard 200 while serving a prison sentence.']</code></pre>
+<h5 class="anchored">
+Hillary Clinton Emails
+</h5>
+<pre><code>[   'semi automatic ropp capping machine / ropp cap sealing machine',
+    'state: hundreds of old clinton emails newly classified',
+    'georgia poll: clinton 70, sanders 23',
+    'nsa whistleblower: clinton email server was ‘open to being hacked by '
+    'anybody in the world’',
+    "hillary clinton's new hampshire boosters out in full force"]</code></pre>
+<h5 class="anchored">
+Donald Trump
+</h5>
+<pre><code>[   "donald trump says he'll attract democrats; polls say that's unlikely",
+    'inside the clintons’ plan to defeat donald trump',
+    'hecklers disrupt trump rally, photographer shoved to the ground',
+    'a photographer covering a donald trump rally in virginia said a secret '
+    'service agent choked him and slammed him to the ground monday as he tried '
+    'to leave a media pen at the event where a protest erupted.',
+    'til that donald trump sold steaks at the sharper image']</code></pre>
+<h5 class="anchored">
+Recipes
+</h5>
+<pre><code>[   'i have access to tons and tons of green onion tops,what can i make?',
+    'mexican chopped salad',
+    'dublin, ireland has gone mad for spice bags from takeaways, i tried my '
+    'hand at my own. potato, shredded chicken, peppers and onions, cooked in '
+    'garlic, chillies and spices. apologies for photo quality!',
+    'tips for starting a healthy lifestyle!',
+    "arroz carreteiro - brazilian wagoners' rice gourmetcentric"]</code></pre>
+<h5 class="anchored">
+TIL (Today I learned) topics
+</h5>
+<pre><code>[   'til maternal kisses are not effective in alleviating minor childhood '
+    'injuries (boo-boos): a randomized, controlled and blinded study.',
+    'til goldman sachs did a study in 2009 that estimated a unified korea '
+    'could boast an economy larger than france, germany, and even japan by '
+    '2050 with a gdp of $6 trillion.',
+    "til the justice league's martian manhunter was once addicted to cookies "
+    'and hulked out when deprived of them.',
+    'til that the top 25 hedge fund managers in the us earn more than all us '
+    'kindergarten teachers (and pay a smaller tax rate)',
+    'til leonard howell ("the first rasta") preached that ras tafari, the '
+    'emperor of ethiopia in 1933, was the messiah, that black people were the '
+    'chosen of god and that they would soon be restored to their native '
+    'country of ethiopia.']</code></pre>
+<h5 class="anchored">
+Apartment and Rent Concerns
+</h5>
+<pre><code>[   'my dad died yesterday and my mom is now being evicted because she is not '
+    'on the lease, what can she do?',
+    'landlord charged my girlfriend a damage fee of $5,000 for a broken door',
+    'is refusing to take a breathalyzer test an admission of guilt?',
+    'does an apartment with living/housing code violations against the city '
+    'equal a nullified lease?',
+    'had verbal agreement with room mate for payment of back monies to be '
+    'paid, to be formalized in writing, questions, etc.']</code></pre>
+<h5 class="anchored">
+Bernie Sanders
+</h5>
+<pre><code>[   '“it appears that mr. trump is getting nervous that working families are '
+    'catching on that his policies represent the interests of the billionaire '
+    'class against almost everyone else." - bernie sanders',
+    'killer mike: bernie sanders is the only candidate for black voters',
+    'hillary clinton has already forgotten about bernie sanders | vice | '
+    'united states',
+    'bernie sanders ‘revolution’ threatens hillary clinton in iowa.',
+    "jesse watters questions sanders' young supporters in iowa"]</code></pre>
+<h5 class="anchored">
+Food
+</h5>
+<pre><code>[   'semi automatic ropp capping machine / ropp cap sealing machine',
+    'state: hundreds of old clinton emails newly classified',
+    'georgia poll: clinton 70, sanders 23']</code></pre>
+<h5 class="anchored">
+Bernie Sanders
+</h5>
+<pre><code>[   '“it appears that mr. trump is getting nervous that working families are '
+    'catching on that his policies represent the interests of the billionaire '
+    'class against almost everyone else." - bernie sanders',
+    'killer mike: bernie sanders is the only candidate for black voters',
+    'bernie sanders: the most fascist candidate of all.']</code></pre>
+<h5 class="anchored">
+Food
+</h5>
+<pre><code>[   'significant online food ordering trend',
+    's&amp;amp;m restaurant in beijing caters to millennial’s basic instincts by '
+    'serving food &amp;amp; sex',
+    'food near me – jasper arkansas',
+    'as i am very polish and grew up eating a lot of good food, i decided to '
+    'cook it for myself tonight.',
+    'food in thailand - november 2015']</code></pre>
+<h5 class="anchored">
+Car-related topics
+</h5>
+<pre><code>[   'charged with dui 2 years and 4 months after i was involved in a single '
+    'car accident.',
+    "[md] car impounded after repair order wasn't received in september, "
+    'options?',
+    'tesla unveils the model 3, its lowest-priced car',
+    'lincolnshire county council hit by £1m malware demand',
+    'florida adverse possession law question and others regarding married but '
+    'separate couples.']</code></pre>
+<h5 class="anchored">
+“Happy new year” reddits
+</h5>
+<pre><code>[   'watch "best of maskedman - 2015 new year special." on youtube',
+    'happy new year reddit! :) i quit retirement, spent $250k in savings and '
+    '51 months (15,000 hours) to develop the new internet, owned by the '
+    'people, powered by humanity - the first company in history equally owned '
+    'by everybody alive! we are uniting the whole world into one!',
+    'mobile game of the year 2015: horizon chase',
+    'til that j. r. r. tolkien hand wrote and illustrated letters to his '
+    'children from father christmas every year for 20 years.',
+    '[bellingham, wa] wife looking at buying property in bella coola, bc; '
+    'legal implications of living half the year here in bellingham and half '
+    'the year in bella coola']</code></pre>
+<h5 class="anchored">
+Vines reaction compilation
+</h5>
+<pre><code>[   'happy 2016 and may all your games be mostly bug free',
+    'eight issues that could shape politics in 2016',
+    '2016 iowa democratic caucus locations - get out there and caucus!!',
+    '♥ dragonsden vines 🔒 - february 1, 2016 🔱 dragonsden reaction compilation '
+    '🎨',
+    'ark: surival evolved rings in 2016 with giant, rideable kangaroos']</code></pre>
+<h5 class="anchored">
+Legal concerns
+</h5>
+<pre><code>[   '(california) is it a crime when a religious figure/ lecturer has '
+    'relations with one of his followers',
+    'being accused of public indecency, among other things. this is a '
+    'misunderstanding because i had health issues. [kansas, usa]',
+    "[philadelphia, pa] i'm concerned that something suspicious is going on at "
+    "my neighbor's house. i'd like to know if there's enough probable cause "
+    'for the police to investigate.',
+    "refugee's treated worse than dogs!",
+    'i have a great idea for a trpg.']</code></pre>
 <h2 class="anchored">
 Conclusions and Recommendations
 </h2>
@@ -1108,6 +1110,8 @@ References
 <i>
 <ul>
 <li>
+<a href="https://www.techspot.com/news/91081-reddit-bans-subreddit-accused-spreading-covid-19-disinformation.html">Thumbnail Image</a>
+</li><li>
 <a href="https://towardsdatascience.com/all-the-news-17fa34b52b9d">All the news</a>
 </li><li>
 <a href="https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py">Clustering text documents using k-means</a>
@@ -1117,7 +1121,6 @@ References
 </i><p><i></i></p>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
