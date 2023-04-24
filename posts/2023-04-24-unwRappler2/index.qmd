@@ -1,0 +1,70 @@
+---
+title: UnwRappler
+description: "Predicting mood and polarity of Rappler articles using machine learning"
+date: 2022-04-24
+date-format: "MMM D, YYYY"
+categories: [python, supervised-learning, machine-learning, sentiment-analysis, nlp]
+image: post-thumbnail.jpeg
+# include-in-header: animation.html
+
+format:
+  html:
+    code-fold: true 
+    # css: custom-styles.scss
+jupyter: python3
+
+editor: 
+  render-on-save: true
+
+number-sections: false
+
+draft: true # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+
+---
+
+![](thumbnail.png)
+
+## Authors {#sec-authors}
+
+This analysis was done together with my groupmates George Esleta, Carmelita Esclanda, and Elmer Robles.
+
+<h2>Executie Summary</h2>
+<div class='executive-summary'>
+[Rappler](www.rappler.com), one of the leading online news publishers in the Philippines, obtains audience sentiment through the Mood Meter widget embedded in its articles. The Mood Meter allows a reader to select an article’s mood from a set of predefined moods (happy, inspired, amused, sad, angry, afraid, annoyed, don’t care) with varying polarities (positive mood or negative mood). Using machine learning algorithms, we created two classification models to predict a Rappler article’s dominant mood and polarity. A total of 5,735 Rappler articles with metadata such as category, author, and mood ratings were used as the training set. The resulting models can predict the article polarity with 72% accuracy and the article’s dominant mood with 51% accuracy. These models can aid Rappler and other news publishers in content personalization, article engineering, and dynamic ad placement and pricing. 
+</div>
+
+<h2>Introduction</h2>
+
+With the rapid growth of social networking and the internet in general, [Rappler](www.rappler.com) has been one of the top news providers in the Philippines by developing and distributing news via the web and social media channels. It is a social news network where stories inspire community engagement and digitally fueled actions for social change.
+
+Rappler deployed “Mood Meter”, similar to Facebook Reactions, and embedded it on each article. Through the widget,  Rappler allows readers to share their mood towards an article by answering the question, ”How does the story make you feel?”. Readers choose from a predefined set of emotions, namely: happy, sad, angry, don’t care, inspired, afraid, amused, and annoyed. By that, each article in Rappler will have multiple labeled emotions crowd-sourced from their readers.  Figure 1 shows a sample Mood Meter report of an article.
+
+:::{.column-page}
+![FIGURE 1:  The Rappler Mood Meter. The reader can select from one of eight predefined moods (Happy, Sad, Angry, Don’t Care, Inspired, Afraid, Amused, and Annoyed)](source/rappler-mood-meter.png)
+:::
+
+This paper presents two models that implement Sentiment Analysis by predicting the mood and polarity of a given Rappler article. The paper is organized as follows: Section 1 describes related work on emotion classification using different language resources, features, and algorithms; Section 2 discusses the methodology; Section 3 discusses the model performance; lastly, Section 4 discusses the conclusions.
+
+<h3>1. Related works</h3>
+Studies show that 80% of the way people make decisions is based on emotions, yet this fact has been disregarded by newsgroups. Given this, Rappler made its mark by implementing a 'mood meter' dashboard system that monitors the reader's waves of emotion that kept them involved, thus amplified their social media presence. 
+
+In the advent of the knowledge economy, researchers such as Shivhare et al. [1] utilized emotion ontology and weighting algorithm that deals with the depth of ontology and parent-child relationship to quantify emotion class. The ontology is built with the definition of schemas and aspects such as entities and attributes, the relationship between the entities, and the domain vocabulary. Their research led to an average accuracy of 79.57% from six emotion classes. The emotion detection model was tested on 135 blog posts. 
+
+Another research classified a document's polarity on a multi-way scale and expanded the task of classifying a movie review as either positive or negative to predicting star ratings on either 3 or 4 star scale. Pang et al. [2] checked human performance and,  applied meta algorithm and metric labelling. The Meta algorithm gave the best performance over both multi-class and regression versions of SVMs when a novel similarity measure appropriate to the problem was employed. 
+
+Taking the study further, sentiment analysis has been applied by researchers to get insights from user-generated feedback [3]. Sentiment analysis is the computational study of opinions, sentiments, and emotions in text. Although traditional sentiment analysis focuses on the sentiment or emotion in the text, this study focuses on the emotions that are being elicited by a news article from readers.
+
+Several researchers have performed sentiment analysis of social networks such as Twitter and YouTube [4, 5, 6]. These works deal with comments, tweets and other metadata collected from the social network profiles of users or of public events that have been collected and analyzed to obtain significant and interesting insights about the usage of these social network websites by the general mass of people. 
+
+The work most closely related to ours is by Song et al. [7] and Taj et al. [8]. The former built an emotion lexicon by developing a novel joint non-negative matrix factorization model which not only incorporates crowd-annotated emotion labels of articles but also generates the lexicon using the topic-specific matrices obtained from the factorization process while the latter explored sentiment analysis of news and blogs using a dataset from BBC comprising of new articles between the year 2004 and 2005. They observed that categories of business and sports had more positive articles, whereas entertainment and tech had a majority of negative articles. 
+
+
+<h2> References</h2>
+<i>
+1. [Duterte says he banned Rappler due to ‘twisted’ reporting](https://www.rappler.com/nation/197230-duterte-rappler-ban-twisted-reporting)<br>
+2. [Duterte calls Rappler ‘fake news outlet”](https://www.rappler.com/nation/193806-duterte-fake-news-outlet)<br>
+3. [All the news:Clustering 143,000 articles with KMeans](https://towardsdatascience.com/all-the-news-17fa34b52b9d)<br>
+4. [Story Discovery using K-Means Clustering on news articles](https://seangtkelley.me/blog/2018/01/03/news-article-clustering)<br>
+5. [Clustering text documents using k-means](https://scikit-learn.org/stable/auto_examples/text/plot_document_clustering.html#sphx-glr-auto-examples-text-plot-document-clustering-py)<br>
+6. [Latent semantic analysis](http://www.scholarpedia.org/article/Latent_semantic_analysis)
+</i> -->
