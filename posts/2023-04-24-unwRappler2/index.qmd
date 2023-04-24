@@ -32,7 +32,7 @@ draft: false # setting this to `true` will prevent your post from appearing on y
 
 This analysis was done together with my groupmates George Esleta, Carmelita Esclanda, and Elmer Robles.
 
-Original creation and submission for this notebook was last July 2019.
+Original creation and submission of this report was last July 2019.
 
 ## Executive Summary {#sec-executivesummary}
 
