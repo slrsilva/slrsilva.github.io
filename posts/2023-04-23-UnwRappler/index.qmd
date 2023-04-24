@@ -21,9 +21,11 @@ draft: false # setting this to `true` will prevent your post from appearing on y
 
 ![](thumbnail.png)
 
-<h2>Authors</h2>
+<h2>Authors and Notes</h2>
 
 This analysis was done together with my groupmates George Esleta, Carmelita Esclanda, and Elmer Robles.
+
+Original creation and submission for this notebook was last July 2019.
 
 <h2>Executive Summary</h2>
 <div class='executive-summary'>
