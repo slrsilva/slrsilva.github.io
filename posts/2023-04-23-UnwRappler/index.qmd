@@ -3,7 +3,7 @@ title: UnwRappler
 description: "Revealing Rappler’s underlying focus"
 date: 2022-04-23
 date-format: "MMM D, YYYY"
-categories: [python, unsupervised-learning, clustering, news, rappler, analysis]
+categories: [python, unsupervised-learning, clustering]
 image: post-thumbnail.jpeg
 # include-in-header: animation.html
 format:

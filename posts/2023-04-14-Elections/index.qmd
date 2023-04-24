@@ -2,7 +2,7 @@
 title: "Regional Voting Preferences in the 2019 Philippine Senatorial Elections"
 description: "Looks like voting in the Philippines is all about location, location, location! Literacy and religion may not be factors, but hometown pride definitely is."
 date: 2022-04-17
-categories: [python, EDA, geospatial, analysis]
+categories: [python, geospatial]
 image: thumbnail.jpeg
 # include-in-header: animation.html
 format:

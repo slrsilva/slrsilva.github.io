@@ -3,7 +3,7 @@ title: UnwRappler 2
 description: "Predicting mood and polarity of Rappler articles using machine learning"
 date: 2022-04-24
 date-format: "MMM D, YYYY"
-categories: [python, supervised-learning, machine-learning, sentiment-analysis, nlp, shap]
+categories: [python, supervised-learning, sentiment-analysis, nlp]
 image: source/thumbnail.png
 # include-in-header: animation.html
 

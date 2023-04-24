@@ -2,7 +2,7 @@
 title: "An analysis of the opening moves of the highest-ranked chess players"
 description: "The Sicilian Defence is the best offense"
 date: 2022-04-20
-categories: [python, EDA, SQL, analysis]
+categories: [python, EDA, SQL]
 image: thumbnail.jpeg
 # include-in-header: animation.html
 format:

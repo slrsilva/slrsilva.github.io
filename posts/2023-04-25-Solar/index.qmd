@@ -3,7 +3,7 @@ title: Here Comes The Sun
 description: "Predicting Solar Power Supply Generation in the Philippines using Deep Learning"
 date: 2022-04-25
 date-format: "MMM D, YYYY"
-categories: [python, machine-learning, deep-learning, lstm, energy]
+categories: [python, reinforced-learning, time-series, lstm]
 image: source-files/thumbnail.png
 # include-in-header: animation.html
 
