@@ -32,7 +32,7 @@ draft: false # setting this to `true` will prevent your post from appearing on y
 
 This analysis was done together with my groupmate Jac Lin T. Yu
 
-Original creation and submission of this report was last Dec 2020.
+Original creation and submission of this report was last Dec 2019.
 
 ## Abstract {#sec-executivesummary}
 
