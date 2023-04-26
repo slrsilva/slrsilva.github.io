@@ -25,7 +25,9 @@ draft: false # setting this to `true` will prevent your post from appearing on y
 
 ---
 
-![](source-files/%5BBDCC%5D%20Poster.gif){width=100%}
+![](source-files/%5BBDCC%5D%20Poster.gif){width=55% fig-align="center"}
+
+<div class='text-center'>Infographic on the Project Results</div>
 
 ## Authors {#sec-authors}
 
@@ -48,8 +50,3 @@ The results of the analysis showed that the prevailing genre per decade varied w
 
 The study also identified several areas for further research, including adding more audio features, song structure, and lyrics as features, and increasing the number of existing classifications of genres. Overall, this study provides a foundation for further research on the classification of music genres and highlights the importance of understanding the prevailing genre per decade in the music industry.
 </div>
-
-## Infographic {#sec-executivesummary}
-
-For more details, you can view the Infographic above.
-
