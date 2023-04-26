@@ -1,0 +1,55 @@
+---
+title: Music Through The Years
+description: "A Big Data Explotatory Data Anslysis on the Music Industry"
+date: 2022-04-26
+date-format: "MMM D, YYYY"
+categories: [python, big-data]
+image: source-files/thumbnail.jpeg
+# include-in-header: animation.html
+
+format:
+  html:
+    code-fold: true 
+    # css: custom-styles.scss
+jupyter: python3
+
+editor: 
+  render-on-save: true
+
+number-sections: true
+
+# bibliography: references.bib
+link-citations: true
+
+draft: false # setting this to `true` will prevent your post from appearing on your listing page until you're ready!
+
+---
+
+![](source-files/%5BBDCC%5D%20Poster.gif){width=100%}
+
+## Authors {#sec-authors}
+
+This analysis was done together with my groupmate Jac Lin T. Yu
+
+Original creation and submission of this report was last Dec 2019.
+
+## Summary {#sec-executivesummary}
+
+<div class='executive-summary'>
+Music is a ubiquitous art form that has the power to bring people together across cultures, backgrounds, and languages. As such, it is no surprise that the modern music industry has evolved into a multibillion-dollar industry that encompasses a diverse range of genres, from jazz to pop, rock to electronic, and everything in between. However, while each genre has its own unique characteristics, such as instruments used, rhythm, and tone, it is not just the content that determines whether a song becomes famous or not. There is a seasonality to the music industry, and understanding the prevailing genre per decade is crucial for artists and producers who wish to maximize profits and fame.
+
+Classifying the genre of a song can be a complex and ambiguous task, as it can be based on various factors, including lyrical content, instruments used, and the overall feel of the music. However, automated genre classification using technical aspects of a song is becoming increasingly important as the volume of music produced continues to grow. Moreover, identifying the prevailing genre per decade can provide insights into the underlying sociocultural and historical context of the music, and can help artists and producers tailor their content to meet the changing tastes and preferences of their audiences.
+
+This study aims to answer the question "what is the prevailing genre per decade?" by analyzing two datasets: the Echo Nest dataset, which contains music data from 1922 to 2023 and includes 1,000,000 `(280 GB)` song tracks with 54 features, and the tagtraum industries dataset, which contains 280,831 tracks with 14 unique genres. The datasets were merged using Dask and one-hot encoding was utilized to create an additional 115 features based on the classifiers. The resulting dataset was then used to train and evaluate various classification models, including Decision Trees, Random Forests, and Support Vector Machines, among others.
+
+The Random Forest classifier was found to have the highest accuracy, with an accuracy improvement of over 316% compared to the baseline accuracy of `8.55%`. The model accuracy was `26.4%`, indicating that it was able to correctly classify the genre of a song more than a quarter of the time.
+
+The results of the analysis showed that the prevailing genre per decade varied widely, with country being the most popular genre in the 1960s, 1970s, and 1980s, blues in the 1990s, electronica in the 2000s, and pop in the 2010s. These findings provide valuable insights into the evolution of music over the past century and can help artists and producers tailor their content to meet the changing tastes and preferences of their audiences.
+
+The study also identified several areas for further research, including adding more audio features, song structure, and lyrics as features, and increasing the number of existing classifications of genres. Overall, this study provides a foundation for further research on the classification of music genres and highlights the importance of understanding the prevailing genre per decade in the music industry.
+</div>
+
+## Infographic {#sec-executivesummary}
+
+For more details, you can view the Infographic above.
+
